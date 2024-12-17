@@ -3,8 +3,10 @@ package com.momoc.frame.orm;
 import com.momoc.frame.orm.annotation.MiniEntityTableFieldName;
 import com.momoc.frame.orm.annotation.MiniEntityTableName;
 import com.momoc.frame.orm.convert.MapConvertToBean;
+import com.momoc.frame.orm.util.EntityMethodUtil;
 
 import java.lang.reflect.Field;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -22,15 +24,7 @@ public interface BaseEntityQueryMapper<T, E> {
      * @return
      */
     default String getTableName(Class<T> entityClass) {
-        // 检查实体类是否有MiniEntityTableName注解
-        MiniEntityTableName annotation = entityClass.getAnnotation(MiniEntityTableName.class);
-        if (annotation != null) {
-            // 如果有注解，返回注解中的表名
-            return annotation.name();
-        } else {
-            // 如果没有注解，返回默认的表名（例如，使用类名作为表名）
-            return entityClass.getSimpleName();
-        }
+       return SelectSqlFieldGenerate.getTableName(entityClass);
     }
 
     /**
@@ -39,25 +33,7 @@ public interface BaseEntityQueryMapper<T, E> {
      * @return
      */
     default String getAllTableQueryField(Class<T> entityClass) {
-        StringBuilder sb = new StringBuilder();
-        sb.append("select  ");
-
-        for (Field declaredField : entityClass.getDeclaredFields()) {
-            declaredField.setAccessible(true);
-            MiniEntityTableFieldName annotation = declaredField.getAnnotation(MiniEntityTableFieldName.class);
-            String name;
-            if (annotation != null) {
-                name = annotation.name();
-            } else {
-                name = declaredField.getName();
-            }
-            if (sb.indexOf(name) == -1) {
-                sb.append(name).append(",");
-            }
-        }
-        sb.deleteCharAt(sb.length() - 1);
-        sb.append(" from ").append(getTableName(entityClass));
-        return sb.toString();
+       return SelectSqlFieldGenerate.getAllTableQueryField(entityClass);
     }
 
     default String getSimpleTableQuery(Class<T> entityClass) {
@@ -82,7 +58,7 @@ public interface BaseEntityQueryMapper<T, E> {
      * @param ids
      * @return
      */
-    List<T> queryListByIds(List<E> ids);
+    List<T> queryListByIds(Collection<E> ids);
 
 
     /**
@@ -152,8 +128,10 @@ public interface BaseEntityQueryMapper<T, E> {
      */
     <R> R queryBean(String sql, Map<String, Object> params, Class<R> RClass);
 
+    <R> R queryBean( Map<String, Object> params, Class<R> RClass);
 
     /**
+     * 根据SQL获取实体类，查询的字段与实体类要遵循规则
      * @param params        参数
      * @param convertToBean 转换方法
      * @param <R>     返回转换后的实体类， 特殊实体类通过构造方法转换时需要实现,入参为Map<String,Object>
@@ -162,6 +140,14 @@ public interface BaseEntityQueryMapper<T, E> {
     <R> List<R> queryBeanListByMap(String sql, Map<String, Object> params, MapConvertToBean<R> convertToBean);
 
 
+
+    /**
+     * @param params    参数
+     * @param <R> 类型
+     * @return
+     */
+    <R> List<R> queryBeanListByMap(Map<String, Object> params, Class<R> RClass);
+
     /**
      * @param sql       sql
      * @param params    参数
@@ -169,7 +155,6 @@ public interface BaseEntityQueryMapper<T, E> {
      * @return
      */
     <R> List<R> queryBeanListByMap(String sql, Map<String, Object> params, Class<R> RClass);
-
 
 
     EntityPage<T> queryPageByMap(Map<String, Object> params, EntityPage<T> tEntityPage);

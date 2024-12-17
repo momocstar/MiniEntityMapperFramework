@@ -14,4 +14,14 @@ public class EntityPage<T> {
     Long total;
 
     List<T> pageData;
+
+
+    public EntityPage() {
+    }
+
+    public EntityPage(Integer page, Integer pageSize) {
+        this.page = page;
+        this.pageSize = pageSize;
+    }
+
 }

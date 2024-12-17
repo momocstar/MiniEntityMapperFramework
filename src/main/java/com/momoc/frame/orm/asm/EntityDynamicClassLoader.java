@@ -20,6 +20,14 @@ public class EntityDynamicClassLoader extends ClassLoader {
     }
 
 
+    /**
+     * 使用AMS动态生成模板查询类
+     * @param entityClass 实体类与对应的数据库的表
+     * @param idClass 主键类型
+     * @return
+     * @param <T> 实体
+     * @param <E> 主键
+     */
     public static <T, E> BaseEntityTemplateMapper<T, E> generateMapperTemplateClass(Class<T> entityClass, Class<E> idClass) {
         // 动态生成BaseEntityImpl类的字节码
         AsmClassInfo baseEntityImplClass = EntityDynamicClassCreator.createBaseEntityImplClass(entityClass, idClass);

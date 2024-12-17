@@ -1,6 +1,8 @@
 package com.momoc.frame.orm.util;
 
 import com.momoc.frame.orm.annotation.MiniEntityTableFieldName;
+import com.momoc.frame.orm.annotation.MiniEntityTableName;
+import com.mysql.cj.jdbc.ClientPreparedStatement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -8,6 +10,7 @@ import java.lang.reflect.*;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -18,11 +21,12 @@ public class EntityMethodUtil {
 
     /**
      * 通过无参构造函数获取当前类的实例
+     *
      * @param defClass 类
+     * @param <R>      实例
      * @return
-     * @param <R> 实例
      */
-    public static  <R> R createInstance(Class<R> defClass) {
+    public static <R> R createInstance(Class<R> defClass) {
         try {
             Constructor<R> constructor = defClass.getConstructor();
             constructor.setAccessible(true);
@@ -41,17 +45,20 @@ public class EntityMethodUtil {
      * @throws IllegalAccessException
      * @throws InvocationTargetException
      */
-    public static  <R> List<R> queryRsToBean(ResultSet resultSet, Class<R> beanClass, Map<String, List<Method>> tableFieldNameSetterMap) throws SQLException{
+    public static <R> List<R> queryRsToBean(ResultSet resultSet, Class<R> beanClass, Map<String, List<Method>> tableFieldNameSetterMap) throws SQLException {
 
         ArrayList<R> defs = new ArrayList<>();
 
-        if (resultSet.next()) {
+        Statement statement = resultSet.getStatement();
+        logger.info("final statement sql:{}", statement.toString());
+        while (resultSet.next()) {
             ResultSetMetaData metaData = resultSet.getMetaData();
             int columnCount = metaData.getColumnCount();
 
             R instance = createInstance(beanClass);
             for (int i = 1; i <= columnCount; i++) {
                 String columnName = metaData.getColumnName(i);
+
                 Object columnValue = resultSet.getObject(i);
                 try {
 
@@ -61,14 +68,13 @@ public class EntityMethodUtil {
                     // 根据列名设置到resultObject的对应属性
 
                     List<Method> methods = null;
-                    if (tableFieldNameSetterMap != null && !tableFieldNameSetterMap.isEmpty()){
+                    if (tableFieldNameSetterMap != null && !tableFieldNameSetterMap.isEmpty()) {
                         methods = tableFieldNameSetterMap.get(columnName);
-                        setterFieldValue(columnValue, instance,  methods);
+                        setterFieldValue(columnValue, instance, methods);
                     }
 
-                }catch (Exception e){
-
-                    logger.error("转换失败: columnName:{} columnValue:{}", columnName,columnValue, e);
+                } catch (Exception e) {
+                    logger.error("转换失败: columnName:{} columnValue:{}", columnName, columnValue, e);
                 }
 
             }
@@ -81,18 +87,19 @@ public class EntityMethodUtil {
      * 重载方法
      * {@link EntityMethodUtil#queryRsToBean}
      */
-    public static  <R> List<R> queryRsToBean(ResultSet resultSet, Class<R> beanClass) throws SQLException, IllegalAccessException, InvocationTargetException {
+    public static <R> List<R> queryRsToBean(ResultSet resultSet, Class<R> beanClass) throws SQLException, IllegalAccessException, InvocationTargetException {
         return queryRsToBean(resultSet, beanClass, null);
     }
 
     /**
      * 将结果映射成map
+     *
      * @param resultSet
      * @return
      * @throws SQLException
      */
-    public static  List<Map<String, Object>> queryRsToMap(ResultSet resultSet) throws SQLException {
-        List<Map<String,Object>> defs = new ArrayList<>();
+    public static List<Map<String, Object>> queryRsToMap(ResultSet resultSet) throws SQLException {
+        List<Map<String, Object>> defs = new ArrayList<>();
         if (resultSet.next()) {
             ResultSetMetaData metaData = resultSet.getMetaData();
             int columnCount = metaData.getColumnCount();
@@ -111,9 +118,9 @@ public class EntityMethodUtil {
     /**
      * 获取字段名称的构造方法
      *
-     * @param methodParam    方法参数
+     * @param methodParam 方法参数
      * @param instance    bean对象
-     * @param methods    需要调用的setter方法列表
+     * @param methods     需要调用的setter方法列表
      * @return
      */
     public static void setterFieldValue(Object methodParam, Object instance, List<Method> methods) {
@@ -151,9 +158,9 @@ public class EntityMethodUtil {
 
             for (Method method : methods) {
                 Parameter[] parameters = method.getParameters();
-                if (parameters[0].getType().equals(String.class)){
+                if (parameters[0].getType().equals(String.class)) {
                     method.invoke(instance, methodParam.toString());
-                }else{
+                } else {
                     method.invoke(instance, methodParam);
                 }
             }
@@ -176,11 +183,9 @@ public class EntityMethodUtil {
      */
     public static HashMap<String, List<Method>> buildFiledSetterMethodMap(Class<?> entityClass) {
 
+        HashMap<String, List<Method>> tableFieldNameSetterMap = TABLE_FIELD_NAME_SETTER_CACHE.computeIfAbsent(entityClass, k -> new HashMap<>());
 
-
-        HashMap<String, List<Method>> tableFieldNameSetterMap = TABLE_FIELD_NAME_SETTER_CACHE.computeIfAbsent(entityClass, k->new HashMap<>());
-
-        if (!tableFieldNameSetterMap.isEmpty()){
+        if (!tableFieldNameSetterMap.isEmpty()) {
             return tableFieldNameSetterMap;
         }
 
@@ -197,7 +202,7 @@ public class EntityMethodUtil {
                 if (annotation != null) {
                     tableFieldName = annotation.name();
                 }
-                tableFieldNameSetterMap.computeIfAbsent(tableFieldName, k->new ArrayList<>()).add(setterMethod);
+                tableFieldNameSetterMap.computeIfAbsent(tableFieldName, k -> new ArrayList<>()).add(setterMethod);
             } catch (NoSuchMethodException e) {
                 throw new RuntimeException(e);
             }
@@ -210,20 +215,21 @@ public class EntityMethodUtil {
 
     /**
      * 拼接列表，并给字符串加上'A','A'
+     *
      * @param list
      * @param separator 分隔符
      * @return
      */
-    public static String join(Collection<?> list, String separator){
-        if (list == null || list.isEmpty()){
+    public static String join(Collection<?> list, String separator) {
+        if (list == null || list.isEmpty()) {
             return "";
         }
         StringBuilder stringBuilder = new StringBuilder();
 
         for (Object source : list) {
-            if (source instanceof String){
+            if (source instanceof String) {
                 stringBuilder.append("'").append(source).append("'").append(separator);
-            }else {
+            } else {
                 stringBuilder.append(source.toString()).append(separator);
             }
         }
@@ -232,21 +238,20 @@ public class EntityMethodUtil {
 
     }
 
-    public static String join(Object[] arr, String separator){
-        if (arr == null || arr.length == 0){
+    public static String join(Object[] arr, String separator) {
+        if (arr == null || arr.length == 0) {
             return "";
         }
         StringBuilder stringBuilder = new StringBuilder();
         for (Object source : arr) {
-            if (source instanceof String){
+            if (source instanceof String) {
                 stringBuilder.append("'").append(source).append("'").append(separator);
-            }else {
+            } else {
                 stringBuilder.append(source.toString()).append(separator);
             }
         }
-
         return stringBuilder.substring(0, stringBuilder.length() - 1);
-
     }
+
 
 }

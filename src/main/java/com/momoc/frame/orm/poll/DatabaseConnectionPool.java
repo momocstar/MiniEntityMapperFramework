@@ -1,22 +1,30 @@
 package com.momoc.frame.orm.poll;
 
+import com.momoc.frame.orm.EntityPage;
+import com.momoc.frame.orm.proccessor.NamedPageEntityPreparedProcessor;
+import com.momoc.frame.orm.proccessor.NamedPreparedProcessor;
+import com.momoc.frame.orm.proccessor.SqlParamsPreparedProcessor;
 import com.momoc.frame.orm.util.EntityMethodUtil;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
+import lombok.Getter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.sql.DataSource;
 import java.sql.*;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+
 
 public class DatabaseConnectionPool {
-    private static HikariDataSource dataSource;
+    /**
+     * 注入数据源即可
+     */
+    @Getter
+    private static DataSource dataSource;
+
     private static Logger logger = LoggerFactory.getLogger(DatabaseConnectionPool.class);
 
     static {
@@ -30,18 +38,21 @@ public class DatabaseConnectionPool {
         dataSource = new HikariDataSource(config);
     }
 
-    public static DataSource getDataSource() {
-        return dataSource;
+    public static <R> List<R> queryBeanSql(StringBuilder sql, Map<String, Object> dbParams, Class<R> entityClass) {
+        //NamedPreparedProcessor不会使用entityPage
+        return queryBeanSql(sql, dbParams, entityClass, null, NamedPreparedProcessor.getInstance());
+
     }
 
-    public <R> List<R> queryBeanSql(StringBuilder sql, Map<String, Object> dbParams, Class<R> entityClass) {
+    public static <R> List<R> queryBeanSql(StringBuilder sql, Map<String, Object> dbParams, Class<R> entityClass, EntityPage<R> entityPage,
+                                           SqlParamsPreparedProcessor paramsPreparedProcessor) {
         DataSource dataSource = DatabaseConnectionPool.getDataSource();
         Connection connection = null;
         List<R> ts = new ArrayList<>();
 
         try {
             connection = dataSource.getConnection();
-            ArrayList<Object> list = handlerWhereParams(sql, dbParams);
+            List<Object> list = paramsPreparedProcessor.handlerWhereParams(sql, dbParams, entityPage);
             String finalSql = sql.toString();
             logger.debug("Final SQL: {}", finalSql);
             PreparedStatement statement;
@@ -73,19 +84,23 @@ public class DatabaseConnectionPool {
         }
     }
 
+    public static <R> List<R> queryPageBeanSql(StringBuilder sql, Map<String, Object> dbParams, Class<R> entityClass, EntityPage<R> entityPage) {
+        return queryBeanSql(sql, dbParams, entityClass, entityPage, NamedPageEntityPreparedProcessor.getInstance());
+    }
+
     /**
      * 查询后将结果映射成map
      * @param sql
      * @param dbParams
      * @return
      */
-    public List<Map<String,Object>> queryMapSql(StringBuilder sql, Map<String, Object> dbParams) {
+    public static List<Map<String, Object>> queryMapSql(StringBuilder sql, Map<String, Object> dbParams) {
         DataSource dataSource = DatabaseConnectionPool.getDataSource();
         Connection connection = null;
 
         try {
             connection = dataSource.getConnection();
-            ArrayList<Object> list = handlerWhereParams(sql, dbParams);
+            ArrayList<Object> list = NamedPreparedProcessor.getInstance().handlerWhereParams( sql, dbParams);
             String finalSql = sql.toString();
             logger.debug("Final SQL: {}", finalSql);
             PreparedStatement statement;
@@ -116,60 +131,6 @@ public class DatabaseConnectionPool {
         }
     }
 
-
-    /**
-     * 处理sql  where的参数条件
-     * @param sql sql
-     * @param dbParams 参数
-     * @return
-     */
-    private static ArrayList<Object> handlerWhereParams(StringBuilder sql, Map<String, Object> dbParams) {
-        //自带where
-        ArrayList<Object> list = new ArrayList<>();
-        if (sql.indexOf("where") != -1) {
-            // 使用正则表达式匹配所有的参数占位符
-            Pattern pattern = Pattern.compile("@(\\w+)");
-            Matcher matcher = pattern.matcher(sql);
-
-            //参数顺序
-            while (matcher.find()) {
-                String key = matcher.group(1);
-                Object value = dbParams.get(key) != null ? dbParams.get(key) : null;
-                if (value == null) {
-                    throw new IllegalArgumentException("Parameter '" + key + "' is not provided in the map");
-                }
-                // 添加参数值到列表
-                list.add(value);
-            }
-
-            for (Map.Entry<String, Object> entry : dbParams.entrySet()) {
-                String key = "@" + entry.getKey();
-                int index = sql.indexOf(key);
-                if (index != -1) {
-                    sql.replace(index, index + key.length(), "?");
-                } else {
-                    throw new IllegalArgumentException("Parameter '" + key + "' is not provided in the map");
-                }
-            }
-        } else {
-            //没有带where
-
-            sql.append(" where ");
-            for (Map.Entry<String, Object> entry : dbParams.entrySet()) {
-
-                Object value = entry.getValue();
-                if (value instanceof Collection) {
-                    dbParams.put(entry.getKey(), EntityMethodUtil.join((Collection<?>) value, ","));
-                    sql.append(entry.getKey()).append(" in ").append("(?)");
-                }else{
-                    sql.append(entry.getKey()).append(" = ").append("?");
-                }
-                list.add(entry.getValue());
-            }
-
-        }
-        return list;
-    }
 
 //    public <R>  List<R> querySql(StringBuilder sql, Map<String, Object> dbParams, Class<R> entityClass) {
 //        DataSource dataSource = DatabaseConnectionPool.getDataSource();
