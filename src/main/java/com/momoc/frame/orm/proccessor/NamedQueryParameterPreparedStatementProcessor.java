@@ -2,10 +2,7 @@ package com.momoc.frame.orm.proccessor;
 
 import com.momoc.frame.orm.EntityPage;
 import com.momoc.frame.orm.mapper.DBParams;
-import com.momoc.frame.orm.util.EntityMethodUtil;
 
-import java.sql.Array;
-import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -16,7 +13,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-public class NamedPreparedProcessor implements SqlParamsPreparedProcessor {
+public class NamedQueryParameterPreparedStatementProcessor implements SqlParamsPreparedProcessor {
 
     String parseSQL;
 
@@ -30,13 +27,13 @@ public class NamedPreparedProcessor implements SqlParamsPreparedProcessor {
     private static final Pattern S_PATTERN_SAFE = Pattern.compile("(?i)(insert|update|delete|alter|drop|truncate)");
 
 
-    private static NamedPreparedProcessor instance;
+    private static NamedQueryParameterPreparedStatementProcessor instance;
 
-    public static NamedPreparedProcessor getInstance() {
+    public static NamedQueryParameterPreparedStatementProcessor getInstance() {
         if (instance == null) {
-            synchronized (NamedPreparedProcessor.class) {
+            synchronized (NamedQueryParameterPreparedStatementProcessor.class) {
                 if (null == instance) {
-                    instance = new NamedPreparedProcessor();
+                    instance = new NamedQueryParameterPreparedStatementProcessor();
                 }
                 return instance;
             }

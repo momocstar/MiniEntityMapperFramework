@@ -1,6 +1,6 @@
 package com.momoc.frame.orm.asm;
 
-import com.momoc.frame.orm.BaseEntityTemplateMapper;
+import com.momoc.frame.orm.mapper.BaseEntityTemplateMapper;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Type;

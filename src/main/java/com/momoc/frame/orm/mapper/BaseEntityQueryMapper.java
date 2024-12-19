@@ -1,11 +1,8 @@
-package com.momoc.frame.orm;
+package com.momoc.frame.orm.mapper;
 
-import com.momoc.frame.orm.annotation.MiniEntityTableFieldName;
-import com.momoc.frame.orm.annotation.MiniEntityTableName;
+import com.momoc.frame.orm.EntityPage;
 import com.momoc.frame.orm.convert.MapConvertToBean;
-import com.momoc.frame.orm.util.EntityMethodUtil;
 
-import java.lang.reflect.Field;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -24,7 +21,7 @@ public interface BaseEntityQueryMapper<T, E> {
      * @return
      */
     default String getTableName(Class<T> entityClass) {
-       return SelectSqlFieldGenerate.getTableName(entityClass);
+        return SelectSqlFieldGenerate.getTableName(entityClass);
     }
 
     /**
@@ -33,7 +30,7 @@ public interface BaseEntityQueryMapper<T, E> {
      * @return
      */
     default String getAllTableQueryField(Class<T> entityClass) {
-       return SelectSqlFieldGenerate.getAllTableQueryField(entityClass);
+        return SelectSqlFieldGenerate.getAllTableQueryField(entityClass);
     }
 
     default String getSimpleTableQuery(Class<T> entityClass) {
@@ -61,6 +58,8 @@ public interface BaseEntityQueryMapper<T, E> {
     List<T> queryListByIds(Collection<E> ids);
 
 
+
+
     /**
      * 通过sql查询主键
      *
@@ -68,6 +67,10 @@ public interface BaseEntityQueryMapper<T, E> {
      * @return
      */
     T queryOneByCondition(Map<String, Object> params);
+
+    T queryOneByCondition(DBParams... dbParams);
+
+
 
     /**
      * 通过sql查询主键
@@ -78,6 +81,7 @@ public interface BaseEntityQueryMapper<T, E> {
      */
     T queryOneByCondition(String sql, Map<String, Object> params);
 
+    T queryOneByCondition(String sql, DBParams... dbParams);
 
     /**
      * 查询实体list通过params参数
@@ -86,6 +90,9 @@ public interface BaseEntityQueryMapper<T, E> {
      * @return
      */
     List<T> queryListByMap(Map<String, Object> params);
+
+    List<T> queryListByMap(DBParams... dbParams);
+
 
     /**
      * sql查询实体list通过params参数
@@ -96,6 +103,7 @@ public interface BaseEntityQueryMapper<T, E> {
      */
     List<T> queryListByMap(String sql, Map<String, Object> params);
 
+    List<T> queryListByMap(String sql, DBParams... dbParams);
 
     /**
      * ·
@@ -105,6 +113,8 @@ public interface BaseEntityQueryMapper<T, E> {
      * @return
      */
     Long countByMap(Map<String, Object> params);
+
+    Long countByMap(DBParams... dbParams);
 
 
     /**
@@ -116,56 +126,82 @@ public interface BaseEntityQueryMapper<T, E> {
      */
     Long countByMap(String sql, Map<String, Object> params);
 
+    Long countByMap(String sql, DBParams... dbParams);
+
 
     /**
      * 根据sql条件获取bean
      *
-     * @param sql          sql
-     * @param params       参数
+     * @param sql    sql
+     * @param params 参数
      * @param RClass 自己定义的Bean
      * @param <R>    自己定义的Bean类型
      * @return
      */
-    <R> R queryBean(String sql, Map<String, Object> params, Class<R> RClass);
+    <R> R queryBean(String sql, Class<R> RClass, Map<String, Object> params);
 
-    <R> R queryBean( Map<String, Object> params, Class<R> RClass);
+    <R> R queryBean(String sql, Class<R> RClass, DBParams... dbParams);
+
+    /**
+     * @param params
+     * @param RClass
+     * @param <R>
+     * @return
+     */
+    <R> R queryBean(Class<R> RClass, Map<String, Object> params);
+
+
+    <R> R queryBean(Class<R> RClass, DBParams... dbParams);
+
 
     /**
      * 根据SQL获取实体类，查询的字段与实体类要遵循规则
+     *
      * @param params        参数
      * @param convertToBean 转换方法
-     * @param <R>     返回转换后的实体类， 特殊实体类通过构造方法转换时需要实现,入参为Map<String,Object>
+     * @param <R>           返回转换后的实体类， 特殊实体类通过构造方法转换时需要实现,入参为Map<String,Object>
      * @return
      */
-    <R> List<R> queryBeanListByMap(String sql, Map<String, Object> params, MapConvertToBean<R> convertToBean);
+    <R> List<R> queryBeanListByMap(String sql, MapConvertToBean<R> convertToBean, Map<String, Object> params);
 
+    <R> List<R> queryBeanListByMap(String sql, MapConvertToBean<R> convertToBean, DBParams... dbParams);
 
 
     /**
-     * @param params    参数
-     * @param <R> 类型
+     * @param params 参数
+     * @param <R>    类型
      * @return
      */
-    <R> List<R> queryBeanListByMap(Map<String, Object> params, Class<R> RClass);
+    <R> List<R> queryBeanListByMap(Class<R> RClass, Map<String, Object> params);
 
     /**
-     * @param sql       sql
-     * @param params    参数
-     * @param <R> 类型
+     * @param sql    sql
+     * @param params 参数
+     * @param <R>    类型
      * @return
      */
-    <R> List<R> queryBeanListByMap(String sql, Map<String, Object> params, Class<R> RClass);
+    <R> List<R> queryBeanListByMap(String sql, Class<R> RClass, Map<String, Object> params);
 
 
-    EntityPage<T> queryPageByMap(Map<String, Object> params, EntityPage<T> tEntityPage);
+    <R> List<R> queryBeanListByMap(String sql, Class<R> RClass, DBParams... dbParams);
 
-    EntityPage<T> queryPageByMap(String sql, Map<String, Object> params, EntityPage<T> tEntityPage);
+    EntityPage<T> queryPageByMap(EntityPage<T> tEntityPage, DBParams... dbParams);
+
+    EntityPage<T> queryPageByMap(EntityPage<T> tEntityPage, Map<String, Object> params);
+
+    EntityPage<T> queryPageByMap(String sql, EntityPage<T> tEntityPage, DBParams... dbParams);
+
+    EntityPage<T> queryPageByMap(String sql, EntityPage<T> tEntityPage, Map<String, Object> params);
 
 
-    <R> EntityPage<R> queryPageByMap(String sql, Map<String, Object> params, Class<R> RClass, EntityPage<R>  entityPage);
+    <R> EntityPage<R> queryPageByMap(String sql, Class<R> RClass, EntityPage<R> entityPage, DBParams... dbParams);
+
+    <R> EntityPage<R> queryPageByMap(String sql, Class<R> RClass, EntityPage<R> entityPage, Map<String, Object> params);
 
 
-    <R> EntityPage<R> queryPageByMap(Map<String, Object> params, Class<R> RClass,  EntityPage<R>  entityPage);
+    <R> EntityPage<R> queryPageByMap(Class<R> RClass, EntityPage<R> entityPage, Map<String, Object> params);
+
+    <R> EntityPage<R> queryPageByMap(Class<R> RClass, EntityPage<R> entityPage, DBParams... dbParams);
 
 
 }

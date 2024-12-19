@@ -1,14 +1,15 @@
-import com.momoc.frame.orm.BaseEntityTemplateMapper;
+import com.momoc.frame.orm.mapper.BaseEntityTemplateMapper;
 import com.momoc.frame.orm.EntityPage;
 import com.momoc.frame.orm.asm.EntityDynamicClassLoader;
-import com.momoc.frame.orm.poll.DBParams;
+import com.momoc.frame.orm.mapper.DBParams;
 import lombok.extern.slf4j.Slf4j;
 import model.TestTable;
 
 import java.util.*;
 
+
 @Slf4j
-public class Test {
+public class TestQuery {
     public static void main(String[] args) {
 
         HashMap<String, Object> paramsOne = new HashMap<>();
@@ -18,13 +19,9 @@ public class Test {
         entities.add(1);
         entities.add(2);
 
-
-
-
         BaseEntityTemplateMapper<TestTable, Integer> baseEntityTemplateMapper = EntityDynamicClassLoader.generateMapperTemplateClass(TestTable.class, Integer.class);
 
         Map<String, Object> two = baseEntityTemplateMapper.buildQueryMap(new DBParams("id", entities));
-
 
 
         TestTable testTable = baseEntityTemplateMapper.queryOneById(1);
@@ -52,18 +49,18 @@ public class Test {
         System.out.println("countByMap:"  + i);
         System.out.println("====================");
 
-        TestTable queryBean = baseEntityTemplateMapper.queryBean(paramsOne, TestTable.class);
+        TestTable queryBean = baseEntityTemplateMapper.queryBean( TestTable.class, paramsOne);
         System.out.println("queryBean:"  + queryBean);
 
         System.out.println("====================");
 
-        List<TestTable> queryBeanListByMap = baseEntityTemplateMapper.queryBeanListByMap(two, TestTable.class);
+        List<TestTable> queryBeanListByMap = baseEntityTemplateMapper.queryBeanListByMap( TestTable.class, two);
         System.out.println("queryBeanListByMap:"  + queryBeanListByMap);
 
         System.out.println("====================");
 
         EntityPage<TestTable> testTableEntityPage = new EntityPage<>();
-        baseEntityTemplateMapper.queryPageByMap(two, testTableEntityPage);
+        baseEntityTemplateMapper.queryPageByMap( testTableEntityPage, two);
         System.out.println("queryPageByMap:"  + testTableEntityPage);
         System.out.println("====================");
 

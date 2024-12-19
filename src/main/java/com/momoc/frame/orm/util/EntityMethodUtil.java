@@ -1,8 +1,5 @@
 package com.momoc.frame.orm.util;
 
-import com.momoc.frame.orm.annotation.MiniEntityTableFieldName;
-import com.momoc.frame.orm.annotation.MiniEntityTableName;
-import com.mysql.cj.jdbc.ClientPreparedStatement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -50,7 +47,7 @@ public class EntityMethodUtil {
         ArrayList<R> defs = new ArrayList<>();
 
         Statement statement = resultSet.getStatement();
-        logger.info("final statement sql:{}", statement.toString());
+        logger.debug("final statement sql:{}", statement.toString());
         while (resultSet.next()) {
             ResultSetMetaData metaData = resultSet.getMetaData();
             int columnCount = metaData.getColumnCount();
@@ -171,47 +168,7 @@ public class EntityMethodUtil {
     }
 
 
-    /**
-     * 类的映射缓存
-     */
-    static Map<Class<?>, HashMap<String, List<Method>>> TABLE_FIELD_NAME_SETTER_CACHE = new ConcurrentHashMap<>();
 
-    /**
-     * 构建表字段名称与setter方法关联关系
-     *
-     * @return
-     */
-    public static HashMap<String, List<Method>> buildFiledSetterMethodMap(Class<?> entityClass) {
-
-        HashMap<String, List<Method>> tableFieldNameSetterMap = TABLE_FIELD_NAME_SETTER_CACHE.computeIfAbsent(entityClass, k -> new HashMap<>());
-
-        if (!tableFieldNameSetterMap.isEmpty()) {
-            return tableFieldNameSetterMap;
-        }
-
-        Field[] declaredFields = entityClass.getDeclaredFields();
-        for (Field field : declaredFields) {
-            field.setAccessible(true);
-            String fieldName = field.getName();
-            // 获取setter方法
-            String setterName = "set" + fieldName.substring(0, 1).toUpperCase() + fieldName.substring(1);
-            try {
-                Method setterMethod = entityClass.getMethod(setterName, field.getType());
-                MiniEntityTableFieldName annotation = field.getAnnotation(MiniEntityTableFieldName.class);
-                String tableFieldName = fieldName;
-                if (annotation != null) {
-                    tableFieldName = annotation.name();
-                }
-                tableFieldNameSetterMap.computeIfAbsent(tableFieldName, k -> new ArrayList<>()).add(setterMethod);
-            } catch (NoSuchMethodException e) {
-                throw new RuntimeException(e);
-            }
-        }
-
-
-        return tableFieldNameSetterMap;
-
-    }
 
     /**
      * 拼接列表，并给字符串加上'A','A'

@@ -1,4 +1,4 @@
-package com.momoc.frame.orm;
+package com.momoc.frame.orm.mapper;
 
 import com.momoc.frame.orm.annotation.MiniEntityTableFieldName;
 import com.momoc.frame.orm.annotation.MiniEntityTableName;

@@ -8,5 +8,11 @@ import java.util.Map;
 public interface MapConvertToBean<T> {
 
 
+   /**
+    *
+    * 转换方法
+    * @param dataRow 数据库获取的行数据
+    * @return
+    */
    T convertToBean(Map<String, Object> dataRow);
 }

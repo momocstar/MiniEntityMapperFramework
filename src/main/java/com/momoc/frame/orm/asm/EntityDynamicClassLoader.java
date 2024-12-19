@@ -1,7 +1,7 @@
 package com.momoc.frame.orm.asm;
 
 
-import com.momoc.frame.orm.BaseEntityTemplateMapper;
+import com.momoc.frame.orm.mapper.BaseEntityTemplateMapper;
 import lombok.Getter;
 
 import java.lang.reflect.Constructor;
