@@ -14,7 +14,7 @@ public interface BaseEntityInsertMapper<T,E> {
      * @param dbParams 字段参数
      * @return ID
      */
-    E insert(DBParams... dbParams);
+    E insert(DBParam... dbParams);
 
 
     /**

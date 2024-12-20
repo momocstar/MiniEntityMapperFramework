@@ -3,11 +3,9 @@ package com.momoc.frame.orm.mapper;
 import com.momoc.frame.orm.EntityPage;
 import com.momoc.frame.orm.convert.MapConvertToBean;
 
-import java.lang.reflect.Method;
 import java.util.*;
 
 import com.momoc.frame.orm.poll.SessionQueryExecute;
-import com.momoc.frame.orm.util.EntityMethodUtil;
 import lombok.Getter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,9 +54,7 @@ public abstract class BaseEntityTemplateMapper<T, E> implements BaseEntityQueryM
     public T queryOneById(E id) {
         StringBuilder sql = new StringBuilder(allTableQueryField + " where id = @id limit 1");
 
-        List<T> ts = SessionQueryExecute.queryBeanSql(sql, new HashMap<String, Object>() {{
-            put("id", id);
-        }}, this.entityClass);
+        List<T> ts = SessionQueryExecute.queryBeanSql(sql,this.entityClass,(new DBParam("id", id)));
         return ts.isEmpty() ? null : ts.get(0);
 
 
@@ -68,9 +64,7 @@ public abstract class BaseEntityTemplateMapper<T, E> implements BaseEntityQueryM
     @Override
     public List<T> queryListByIds(Collection<E> ids) {
         StringBuilder sql = new StringBuilder(allTableQueryField);
-        List<T> ts = SessionQueryExecute.queryBeanSql(sql, new HashMap<String, Object>() {{
-            put("id", ids);
-        }}, this.entityClass);
+        List<T> ts = SessionQueryExecute.queryBeanSql(sql, this.entityClass, new DBParam("id", ids));
         return ts;
     }
 
@@ -85,8 +79,8 @@ public abstract class BaseEntityTemplateMapper<T, E> implements BaseEntityQueryM
 
     @Override
     public T queryOneByCondition(String sql, Map<String, Object> params) {
-        List<T> ts = queryListByMap(sql, params);
-        return ts.isEmpty() ? null : ts.get(0);
+        return queryOneByCondition(sql, this.buildQueryDBParams(params));
+
     }
 
     @Override
@@ -99,8 +93,8 @@ public abstract class BaseEntityTemplateMapper<T, E> implements BaseEntityQueryM
         if (params == null || params.isEmpty()) {
             return null;
         }
-        StringBuilder sqlBD = new StringBuilder(sql);
-        return SessionQueryExecute.queryBeanSql(sqlBD, params, this.entityClass);
+        return queryListByMap(allTableQueryField, this.buildQueryDBParams(params));
+
     }
 
     @Override
@@ -111,34 +105,21 @@ public abstract class BaseEntityTemplateMapper<T, E> implements BaseEntityQueryM
 
     @Override
     public Long countByMap(String sql, Map<String, Object> params) {
-
-        List<Map<String, Object>> maps = SessionQueryExecute.queryMapSql(new StringBuilder(sql), params);
-
-        if (!maps.isEmpty()) {
-            Map<String, Object> dataRow = maps.get(0);
-            if (!dataRow.isEmpty()) {
-                for (Object value : dataRow.values()) {
-                    return (Long) value;
-                }
-            }
-        }
-        return null;
+        return countByMap(sql, this.buildQueryDBParams(params));
     }
 
     @Override
     public <R> R queryBean(Class<R> RClass, Map<String, Object> params) {
         String queryFieldSql = SelectSqlFieldGenerate.getAllTableQueryField(RClass);
 
-        return queryBean(queryFieldSql, RClass, params);
+        return queryBean(queryFieldSql, RClass, this.buildQueryDBParams(params));
 
     }
-
-    ;
 
 
     @Override
     public <R> R queryBean(String sql, Class<R> RClass, Map<String, Object> params) {
-        List<R> ts = queryBeanListByMap(sql, RClass, params);
+        List<R> ts = queryBeanListByMap(sql, RClass, this.buildQueryDBParams(params));
         return ts.isEmpty() ? null : ts.get(0);
     }
 
@@ -159,7 +140,7 @@ public abstract class BaseEntityTemplateMapper<T, E> implements BaseEntityQueryM
             return null;
         }
         StringBuilder sqlBD = new StringBuilder(sql);
-        return SessionQueryExecute.queryBeanSql(sqlBD, params, RClass);
+        return SessionQueryExecute.queryBeanSql(sqlBD, RClass, this.buildQueryDBParams(params));
     }
 
     @Override
@@ -168,14 +149,18 @@ public abstract class BaseEntityTemplateMapper<T, E> implements BaseEntityQueryM
             return Collections.emptyList();
         }
 
-        ArrayList<R> rs = new ArrayList<>();
-        List<Map<String, Object>> maps = SessionQueryExecute.queryMapSql(new StringBuilder(sql), params);
-        for (Map<String, Object> map : maps) {
-            R r = convertToBean.convertToBean(map);
-            rs.add(r);
-        }
-        return rs;
+        return queryBeanListByMap(sql, convertToBean, this.buildQueryDBParams(params));
     }
+
+    private DBParam[] buildQueryDBParams(Map<String, Object> params) {
+        DBParam[] dbParams = new DBParam[params.size()];
+        int i = 0;
+        for (Map.Entry<String, Object> entry : params.entrySet()) {
+            dbParams[i++] = new DBParam(entry.getKey(), entry.getValue());
+        }
+        return dbParams;
+    }
+
 
     @Override
     public EntityPage<T> queryPageByMap(EntityPage<T> tEntityPage, Map<String, Object> params) {
@@ -189,21 +174,21 @@ public abstract class BaseEntityTemplateMapper<T, E> implements BaseEntityQueryM
 
 
     @Override
-    public <R> EntityPage<R> queryPageByMap(String sql, Class<R> RClass, EntityPage<R> entityPage, DBParams... dbParams) {
-        return queryPageByMap(sql, RClass, entityPage, this.buildQueryMap(dbParams));
+    public <R> EntityPage<R> queryPageByMap(String sql, Class<R> RClass, EntityPage<R> entityPage, DBParam... dbParams) {
+        String from = sql.substring(sql.indexOf("from"));
+        Long total = countByMap("select count(*) " + from, dbParams);
+        entityPage.setTotal(total);
+        StringBuilder sqlBD = new StringBuilder(sql);
+
+        List<R> ts = SessionQueryExecute.queryPageBeanSql(sqlBD, RClass,  entityPage, dbParams);
+        entityPage.setPageData(ts);
+        return entityPage;
     }
 
 
     @Override
     public <R> EntityPage<R> queryPageByMap(String sql, Class<R> RClass, EntityPage<R> entityPage, Map<String, Object> params) {
-        String from = sql.substring(sql.indexOf("from"));
-        Long total = countByMap("select count(*) " + from, params);
-        entityPage.setTotal(total);
-        StringBuilder sqlBD = new StringBuilder(sql);
-
-        List<R> ts = SessionQueryExecute.queryPageBeanSql(sqlBD, params, RClass, entityPage);
-        entityPage.setPageData(ts);
-        return entityPage;
+        return queryPageByMap(sql, RClass, entityPage, this.buildQueryDBParams(params));
     }
 
     @Override
@@ -212,82 +197,114 @@ public abstract class BaseEntityTemplateMapper<T, E> implements BaseEntityQueryM
         return queryPageByMap(allTableQueryField, RClass, entityPage, params);
     }
 
-    public <R> EntityPage<R> queryPageByMap(Class<R> RClass, EntityPage<R> entityPage, DBParams... dbParams) {
-        Map<String, Object> params = buildQueryMap(dbParams);
+    public <R> EntityPage<R> queryPageByMap(Class<R> RClass, EntityPage<R> entityPage, DBParam... dbParams) {
+
         String allTableQueryField = SelectSqlFieldGenerate.getAllTableQueryField(RClass);
-        return queryPageByMap(allTableQueryField, RClass, entityPage, params);
+        return queryPageByMap(allTableQueryField, RClass, entityPage, dbParams);
     }
 
-    public Map<String, Object> buildQueryMap(DBParams... dbParams) {
-        HashMap<String, Object> queryMap = new HashMap<>();
-        for (DBParams dbParam : dbParams) {
-            queryMap.put(dbParam.getName(), dbParam.getValue());
+//    public Map<String, Object> buildQueryMap(DBParam... dbParams) {
+//        HashMap<String, Object> queryMap = new HashMap<>();
+//        for (DBParam dbParam : dbParams) {
+//            queryMap.put(dbParam.getName(), dbParam.getValue());
+//        }
+//        return queryMap;
+//    }
+
+    @Override
+    public EntityPage<T> queryPageByMap(EntityPage<T> tEntityPage, DBParam... dbParams) {
+        return queryPageByMap(this.entityClass, tEntityPage, dbParams);
+    }
+
+    @Override
+    public EntityPage<T> queryPageByMap(String sql, EntityPage<T> tEntityPage, DBParam... dbParams) {
+        return queryPageByMap(sql, this.entityClass, tEntityPage, dbParams);
+
+    }
+
+    @Override
+    public T queryOneByCondition(DBParam... dbParams) {
+        return queryOneByCondition(allTableQueryField,  dbParams);
+    }
+
+    @Override
+    public T queryOneByCondition(String sql, DBParam... dbParams) {
+        List<T> ts = queryListByMap(sql, dbParams);
+        return ts.isEmpty() ? null : ts.get(0);
+//        return queryOneByCondition(sql, this.buildQueryMap(dbParams));
+    }
+
+    @Override
+    public List<T> queryListByMap(DBParam... dbParams) {
+        return queryListByMap(allTableQueryField, dbParams);
+    }
+
+    @Override
+    public List<T> queryListByMap(String sql, DBParam... dbParams) {
+        StringBuilder sqlBD = new StringBuilder(sql);
+        return SessionQueryExecute.queryBeanSql(sqlBD,  this.entityClass, dbParams);
+
+    }
+
+    @Override
+    public Long countByMap(DBParam... dbParams) {
+        return countByMap("select count(*) from " + tableName, dbParams);
+    }
+
+    @Override
+    public Long countByMap(String sql, DBParam... dbParams) {
+        List<Map<String, Object>> maps = SessionQueryExecute.queryMapSql(new StringBuilder(sql), dbParams);
+
+        if (!maps.isEmpty()) {
+            Map<String, Object> dataRow = maps.get(0);
+            if (!dataRow.isEmpty()) {
+                for (Object value : dataRow.values()) {
+                    return (Long) value;
+                }
+            }
         }
-        return queryMap;
+        return null;
     }
 
     @Override
-    public EntityPage<T> queryPageByMap(EntityPage<T> tEntityPage, DBParams... dbParams) {
-        return queryPageByMap(this.entityClass, tEntityPage, this.buildQueryMap(dbParams));
+    public <R> R queryBean(String sql, Class<R> RClass, DBParam... dbParams) {
+        List<R> ts = queryBeanListByMap(sql, RClass, dbParams);
+        return ts == null || ts.isEmpty() ? null : ts.get(0);
+    }
+
+
+
+    @Override
+    public <R> List<R> queryBeanListByMap(String sql, MapConvertToBean<R> convertToBean, DBParam... dbParams) {
+
+
+        ArrayList<R> rs = new ArrayList<>();
+        List<Map<String, Object>> maps = SessionQueryExecute.queryMapSql(new StringBuilder(sql), dbParams);
+        for (Map<String, Object> map : maps) {
+            R r = convertToBean.convertToBean(map);
+            rs.add(r);
+        }
+        return rs;
+
     }
 
     @Override
-    public EntityPage<T> queryPageByMap(String sql, EntityPage<T> tEntityPage, DBParams... dbParams) {
-        return queryPageByMap(sql, tEntityPage, this.buildQueryMap(dbParams));
+    public <R> List<R> queryBeanListByMap(String sql, Class<R> RClass, DBParam... dbParams) {
+        StringBuilder sqlBD = new StringBuilder(sql);
+        return SessionQueryExecute.queryBeanSql(sqlBD,  RClass, dbParams);
+
     }
 
     @Override
-    public T queryOneByCondition(DBParams... dbParams) {
-        return queryOneByCondition(this.buildQueryMap(dbParams));
+    public <R> List<R> queryBeanListByMap(Class<R> RClass, DBParam... dbParams) {
+
+        String allTableQueryField = SelectSqlFieldGenerate.getAllTableQueryField(RClass);
+        return queryBeanListByMap(allTableQueryField, RClass, dbParams);
+//        return List.of();
     }
 
     @Override
-    public T queryOneByCondition(String sql, DBParams... dbParams) {
-        return queryOneByCondition(sql, this.buildQueryMap(dbParams));
-    }
-
-    @Override
-    public List<T> queryListByMap(DBParams... dbParams) {
-        return queryListByMap(this.buildQueryMap(dbParams));
-    }
-
-    @Override
-    public List<T> queryListByMap(String sql, DBParams... dbParams) {
-        return queryListByMap(sql, this.buildQueryMap(dbParams));
-    }
-
-    @Override
-    public Long countByMap(DBParams... dbParams) {
-        return countByMap(this.buildQueryMap(dbParams));
-    }
-
-    @Override
-    public Long countByMap(String sql, DBParams... dbParams) {
-        return countByMap(sql, this.buildQueryMap(dbParams));
-    }
-
-    @Override
-    public <R> R queryBean(String sql, Class<R> RClass, DBParams... dbParams) {
-        return queryBean(sql, RClass, this.buildQueryMap(dbParams));
-    }
-
-    @Override
-    public <R> R queryBean(Class<R> RClass, DBParams... dbParams) {
-        return queryBean(RClass, this.buildQueryMap(dbParams));
-    }
-
-    @Override
-    public <R> List<R> queryBeanListByMap(String sql, MapConvertToBean<R> convertToBean, DBParams... dbParams) {
-        return queryBeanListByMap(sql, convertToBean, this.buildQueryMap(dbParams));
-    }
-
-    @Override
-    public <R> List<R> queryBeanListByMap(String sql, Class<R> RClass, DBParams... dbParams) {
-        return queryBeanListByMap(sql, RClass, this.buildQueryMap(dbParams));
-    }
-
-    @Override
-    public E insert(DBParams... dbParams) {
+    public E insert(DBParam... dbParams) {
         StringBuilder sql = new StringBuilder();
         sql.append("insert into ").append(tableName).append("(");
 
@@ -297,7 +314,7 @@ public abstract class BaseEntityTemplateMapper<T, E> implements BaseEntityQueryM
 
 
 
-        for (DBParams dbParam : dbParams) {
+        for (DBParam dbParam : dbParams) {
             String name = dbParam.getName();
             sql.append(name).append(",");
         }

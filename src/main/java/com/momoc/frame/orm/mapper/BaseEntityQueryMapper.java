@@ -68,7 +68,7 @@ public interface BaseEntityQueryMapper<T, E> {
      */
     T queryOneByCondition(Map<String, Object> params);
 
-    T queryOneByCondition(DBParams... dbParams);
+    T queryOneByCondition(DBParam... dbParams);
 
 
 
@@ -81,7 +81,7 @@ public interface BaseEntityQueryMapper<T, E> {
      */
     T queryOneByCondition(String sql, Map<String, Object> params);
 
-    T queryOneByCondition(String sql, DBParams... dbParams);
+    T queryOneByCondition(String sql, DBParam... dbParams);
 
     /**
      * 查询实体list通过params参数
@@ -91,7 +91,7 @@ public interface BaseEntityQueryMapper<T, E> {
      */
     List<T> queryListByMap(Map<String, Object> params);
 
-    List<T> queryListByMap(DBParams... dbParams);
+    List<T> queryListByMap(DBParam... dbParams);
 
 
     /**
@@ -103,7 +103,7 @@ public interface BaseEntityQueryMapper<T, E> {
      */
     List<T> queryListByMap(String sql, Map<String, Object> params);
 
-    List<T> queryListByMap(String sql, DBParams... dbParams);
+    List<T> queryListByMap(String sql, DBParam... dbParams);
 
     /**
      * ·
@@ -114,7 +114,7 @@ public interface BaseEntityQueryMapper<T, E> {
      */
     Long countByMap(Map<String, Object> params);
 
-    Long countByMap(DBParams... dbParams);
+    Long countByMap(DBParam... dbParams);
 
 
     /**
@@ -126,7 +126,7 @@ public interface BaseEntityQueryMapper<T, E> {
      */
     Long countByMap(String sql, Map<String, Object> params);
 
-    Long countByMap(String sql, DBParams... dbParams);
+    Long countByMap(String sql, DBParam... dbParams);
 
 
     /**
@@ -140,7 +140,7 @@ public interface BaseEntityQueryMapper<T, E> {
      */
     <R> R queryBean(String sql, Class<R> RClass, Map<String, Object> params);
 
-    <R> R queryBean(String sql, Class<R> RClass, DBParams... dbParams);
+    <R> R queryBean(String sql, Class<R> RClass, DBParam... dbParams);
 
     /**
      * @param params
@@ -151,7 +151,6 @@ public interface BaseEntityQueryMapper<T, E> {
     <R> R queryBean(Class<R> RClass, Map<String, Object> params);
 
 
-    <R> R queryBean(Class<R> RClass, DBParams... dbParams);
 
 
     /**
@@ -164,7 +163,7 @@ public interface BaseEntityQueryMapper<T, E> {
      */
     <R> List<R> queryBeanListByMap(String sql, MapConvertToBean<R> convertToBean, Map<String, Object> params);
 
-    <R> List<R> queryBeanListByMap(String sql, MapConvertToBean<R> convertToBean, DBParams... dbParams);
+    <R> List<R> queryBeanListByMap(String sql, MapConvertToBean<R> convertToBean, DBParam... dbParams);
 
 
     /**
@@ -183,25 +182,28 @@ public interface BaseEntityQueryMapper<T, E> {
     <R> List<R> queryBeanListByMap(String sql, Class<R> RClass, Map<String, Object> params);
 
 
-    <R> List<R> queryBeanListByMap(String sql, Class<R> RClass, DBParams... dbParams);
+    <R> List<R> queryBeanListByMap(String sql, Class<R> RClass, DBParam... dbParams);
 
-    EntityPage<T> queryPageByMap(EntityPage<T> tEntityPage, DBParams... dbParams);
+
+    <R> List<R> queryBeanListByMap(Class<R> RClass, DBParam... dbParams);
+
+    EntityPage<T> queryPageByMap(EntityPage<T> tEntityPage, DBParam... dbParams);
 
     EntityPage<T> queryPageByMap(EntityPage<T> tEntityPage, Map<String, Object> params);
 
-    EntityPage<T> queryPageByMap(String sql, EntityPage<T> tEntityPage, DBParams... dbParams);
+    EntityPage<T> queryPageByMap(String sql, EntityPage<T> tEntityPage, DBParam... dbParams);
 
     EntityPage<T> queryPageByMap(String sql, EntityPage<T> tEntityPage, Map<String, Object> params);
 
 
-    <R> EntityPage<R> queryPageByMap(String sql, Class<R> RClass, EntityPage<R> entityPage, DBParams... dbParams);
+    <R> EntityPage<R> queryPageByMap(String sql, Class<R> RClass, EntityPage<R> entityPage, DBParam... dbParams);
 
     <R> EntityPage<R> queryPageByMap(String sql, Class<R> RClass, EntityPage<R> entityPage, Map<String, Object> params);
 
 
     <R> EntityPage<R> queryPageByMap(Class<R> RClass, EntityPage<R> entityPage, Map<String, Object> params);
 
-    <R> EntityPage<R> queryPageByMap(Class<R> RClass, EntityPage<R> entityPage, DBParams... dbParams);
+    <R> EntityPage<R> queryPageByMap(Class<R> RClass, EntityPage<R> entityPage, DBParam... dbParams);
 
 
 }

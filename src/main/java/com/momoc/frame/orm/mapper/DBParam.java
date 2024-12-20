@@ -5,7 +5,7 @@ import lombok.Data;
 import java.util.Collection;
 
 @Data
-public class DBParams {
+public class DBParam {
 
 
     /**
@@ -14,7 +14,7 @@ public class DBParams {
      * @param value 值
      */
 
-    public DBParams(String name, Object value) {
+    public DBParam(String name, Object value) {
         this.name = name;
         this.value = value;
         if (value instanceof Collection) {
@@ -32,4 +32,8 @@ public class DBParams {
      * List集合的大小，有多少个就预处理多少个？
      */
     Integer collectionSize;
+
+    public boolean isCollection(){
+        return collectionSize != null && collectionSize > 0;
+    }
 }

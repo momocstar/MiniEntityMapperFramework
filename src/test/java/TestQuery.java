@@ -1,7 +1,7 @@
 import com.momoc.frame.orm.mapper.BaseEntityTemplateMapper;
 import com.momoc.frame.orm.EntityPage;
 import com.momoc.frame.orm.asm.EntityDynamicClassLoader;
-import com.momoc.frame.orm.mapper.DBParams;
+import com.momoc.frame.orm.mapper.DBParam;
 import lombok.extern.slf4j.Slf4j;
 import model.TestTable;
 
@@ -21,7 +21,7 @@ public class TestQuery {
 
         BaseEntityTemplateMapper<TestTable, Integer> baseEntityTemplateMapper = EntityDynamicClassLoader.generateMapperTemplateClass(TestTable.class, Integer.class);
 
-        Map<String, Object> two = baseEntityTemplateMapper.buildQueryMap(new DBParams("id", entities));
+//        Map<String, Object> two = baseEntityTemplateMapper.buildQueryMap();
 
 
         TestTable testTable = baseEntityTemplateMapper.queryOneById(1);
@@ -41,11 +41,11 @@ public class TestQuery {
 
         System.out.println("====================");
 
-        List<TestTable> queryListByMap = baseEntityTemplateMapper.queryListByMap(two);
+        List<TestTable> queryListByMap = baseEntityTemplateMapper.queryListByMap(new DBParam("id", entities));
         System.out.println("queryListByMap:"  + queryListByMap);
         System.out.println("====================");
 
-        Long i = baseEntityTemplateMapper.countByMap(two);
+        Long i = baseEntityTemplateMapper.countByMap(new DBParam("id", entities));
         System.out.println("countByMap:"  + i);
         System.out.println("====================");
 
@@ -54,13 +54,13 @@ public class TestQuery {
 
         System.out.println("====================");
 
-        List<TestTable> queryBeanListByMap = baseEntityTemplateMapper.queryBeanListByMap( TestTable.class, two);
+        List<TestTable> queryBeanListByMap = baseEntityTemplateMapper.queryBeanListByMap( TestTable.class,new DBParam("age", 40),new DBParam("id", entities), new DBParam("name", "test2"));
         System.out.println("queryBeanListByMap:"  + queryBeanListByMap);
 
         System.out.println("====================");
 
         EntityPage<TestTable> testTableEntityPage = new EntityPage<>();
-        baseEntityTemplateMapper.queryPageByMap( testTableEntityPage, two);
+        baseEntityTemplateMapper.queryPageByMap( testTableEntityPage, new DBParam("id", entities));
         System.out.println("queryPageByMap:"  + testTableEntityPage);
         System.out.println("====================");
 
