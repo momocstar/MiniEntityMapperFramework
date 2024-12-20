@@ -10,6 +10,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 public class EntityMethodUtil {
 
@@ -163,11 +164,11 @@ public class EntityMethodUtil {
             }
 
         } catch (Exception e) {
+            String methodNames = methods.stream().map(k -> k.getName()).collect(Collectors.joining(","));
             //setter失败不处理
+            logger.warn("setterFieldValue error, method:{}  param:{} paramType:{}", methodNames, methodParam, methodParam.getClass().getName());
         }
     }
-
-
 
 
     /**

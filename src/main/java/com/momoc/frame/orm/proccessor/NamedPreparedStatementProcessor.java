@@ -69,23 +69,7 @@ public class NamedPreparedStatementProcessor  {
      * @return index
      */
     protected  void handlerWhereParams(StringBuilder sql, DBParam[] dbParams) {
-
-
-        if (sql.indexOf("where") != -1) {
-            replacePlaceholder(sql, dbParams);
-        } else {
-            //没有带where
-            sql.append(" where ");
-            for (DBParam dbParam : dbParams) {
-                if (dbParam.isCollection()){
-                    sql.append(dbParam.getName()).append(" in ( ").append('@' + dbParam.getName()).append(" )").append(" and ");
-                }else{
-                    sql.append(dbParam.getName()).append(" = ").append('@' + dbParam.getName()).append(" and ");
-                }
-            }
-            sql.delete(sql.length() - 4 , sql.length());
-            replacePlaceholder(sql, dbParams);
-        }
+        replacePlaceholder(sql, dbParams);
     }
 
     /**

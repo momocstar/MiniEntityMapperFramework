@@ -5,7 +5,7 @@ import java.util.Collection;
 /**
  * 插入接口实现
  */
-public interface BaseEntityInsertMapper<T,E> {
+public interface BaseEntityInsertMapper<T> {
 
 
     /**
@@ -14,15 +14,19 @@ public interface BaseEntityInsertMapper<T,E> {
      * @param dbParams 字段参数
      * @return ID
      */
-    E insert(DBParam... dbParams);
+    Long insert(DBParam... dbParams);
 
+
+    Long insertBySQL(String sql, DBParam... dbParams);
+
+    Long insertBySQL(StringBuilder sql, DBParam... dbParams);
 
     /**
      * 插入实体
      * @param entity 实体， 插入成功后，设置对应的ID
      * @return ID
      */
-    E insert(T entity);
+    Long insert(T entity);
 
     /**
      * 批量插入实体类

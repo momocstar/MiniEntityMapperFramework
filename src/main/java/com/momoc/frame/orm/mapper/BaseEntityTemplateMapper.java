@@ -6,12 +6,13 @@ import com.momoc.frame.orm.convert.MapConvertToBean;
 import java.util.*;
 
 import com.momoc.frame.orm.poll.SessionQueryExecute;
+import com.momoc.frame.orm.poll.SessionUpdateOrInsertExecute;
 import lombok.Getter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
-public abstract class BaseEntityTemplateMapper<T, E> implements BaseEntityQueryMapper<T, E>,BaseEntityInsertMapper<T,E> {
+public abstract class BaseEntityTemplateMapper<T, E> implements BaseEntityQueryMapper<T, E>, BaseEntityInsertMapper<T> {
 
 
     private final Logger logger = LoggerFactory.getLogger(BaseEntityTemplateMapper.class);
@@ -54,7 +55,7 @@ public abstract class BaseEntityTemplateMapper<T, E> implements BaseEntityQueryM
     public T queryOneById(E id) {
         StringBuilder sql = new StringBuilder(allTableQueryField + " where id = @id limit 1");
 
-        List<T> ts = SessionQueryExecute.queryBeanSql(sql,this.entityClass,(new DBParam("id", id)));
+        List<T> ts = SessionQueryExecute.queryBeanSql(sql, this.entityClass, (new DBParam("id", id)));
         return ts.isEmpty() ? null : ts.get(0);
 
 
@@ -110,7 +111,7 @@ public abstract class BaseEntityTemplateMapper<T, E> implements BaseEntityQueryM
 
     @Override
     public <R> R queryBean(Class<R> RClass, Map<String, Object> params) {
-        String queryFieldSql = SelectSqlFieldGenerate.getAllTableQueryField(RClass);
+        String queryFieldSql = SQLFieldGenerate.getAllTableQueryField(RClass);
 
         return queryBean(queryFieldSql, RClass, this.buildQueryDBParams(params));
 
@@ -130,7 +131,7 @@ public abstract class BaseEntityTemplateMapper<T, E> implements BaseEntityQueryM
 //    }
     @Override
     public <R> List<R> queryBeanListByMap(Class<R> RClass, Map<String, Object> params) {
-        String tableQueryField = SelectSqlFieldGenerate.getAllTableQueryField(RClass);
+        String tableQueryField = SQLFieldGenerate.getAllTableQueryField(RClass);
         return queryBeanListByMap(tableQueryField, RClass, params);
     }
 
@@ -180,7 +181,7 @@ public abstract class BaseEntityTemplateMapper<T, E> implements BaseEntityQueryM
         entityPage.setTotal(total);
         StringBuilder sqlBD = new StringBuilder(sql);
 
-        List<R> ts = SessionQueryExecute.queryPageBeanSql(sqlBD, RClass,  entityPage, dbParams);
+        List<R> ts = SessionQueryExecute.queryPageBeanSql(sqlBD, RClass, entityPage, dbParams);
         entityPage.setPageData(ts);
         return entityPage;
     }
@@ -193,13 +194,13 @@ public abstract class BaseEntityTemplateMapper<T, E> implements BaseEntityQueryM
 
     @Override
     public <R> EntityPage<R> queryPageByMap(Class<R> RClass, EntityPage<R> entityPage, Map<String, Object> params) {
-        String allTableQueryField = SelectSqlFieldGenerate.getAllTableQueryField(RClass);
+        String allTableQueryField = SQLFieldGenerate.getAllTableQueryField(RClass);
         return queryPageByMap(allTableQueryField, RClass, entityPage, params);
     }
 
     public <R> EntityPage<R> queryPageByMap(Class<R> RClass, EntityPage<R> entityPage, DBParam... dbParams) {
 
-        String allTableQueryField = SelectSqlFieldGenerate.getAllTableQueryField(RClass);
+        String allTableQueryField = SQLFieldGenerate.getAllTableQueryField(RClass);
         return queryPageByMap(allTableQueryField, RClass, entityPage, dbParams);
     }
 
@@ -224,7 +225,7 @@ public abstract class BaseEntityTemplateMapper<T, E> implements BaseEntityQueryM
 
     @Override
     public T queryOneByCondition(DBParam... dbParams) {
-        return queryOneByCondition(allTableQueryField,  dbParams);
+        return queryOneByCondition(allTableQueryField, dbParams);
     }
 
     @Override
@@ -242,7 +243,7 @@ public abstract class BaseEntityTemplateMapper<T, E> implements BaseEntityQueryM
     @Override
     public List<T> queryListByMap(String sql, DBParam... dbParams) {
         StringBuilder sqlBD = new StringBuilder(sql);
-        return SessionQueryExecute.queryBeanSql(sqlBD,  this.entityClass, dbParams);
+        return SessionQueryExecute.queryBeanSql(sqlBD, this.entityClass, dbParams);
 
     }
 
@@ -273,7 +274,6 @@ public abstract class BaseEntityTemplateMapper<T, E> implements BaseEntityQueryM
     }
 
 
-
     @Override
     public <R> List<R> queryBeanListByMap(String sql, MapConvertToBean<R> convertToBean, DBParam... dbParams) {
 
@@ -291,44 +291,42 @@ public abstract class BaseEntityTemplateMapper<T, E> implements BaseEntityQueryM
     @Override
     public <R> List<R> queryBeanListByMap(String sql, Class<R> RClass, DBParam... dbParams) {
         StringBuilder sqlBD = new StringBuilder(sql);
-        return SessionQueryExecute.queryBeanSql(sqlBD,  RClass, dbParams);
+        return SessionQueryExecute.queryBeanSql(sqlBD, RClass, dbParams);
 
     }
 
     @Override
     public <R> List<R> queryBeanListByMap(Class<R> RClass, DBParam... dbParams) {
 
-        String allTableQueryField = SelectSqlFieldGenerate.getAllTableQueryField(RClass);
+        String allTableQueryField = SQLFieldGenerate.getAllTableQueryField(RClass);
         return queryBeanListByMap(allTableQueryField, RClass, dbParams);
 //        return List.of();
     }
 
     @Override
-    public E insert(DBParam... dbParams) {
-        StringBuilder sql = new StringBuilder();
-        sql.append("insert into ").append(tableName).append("(");
-
-
-        StringBuilder columName = new StringBuilder();
-        StringBuilder value = new StringBuilder();
+    public Long insert(DBParam... dbParams) {
+        StringBuilder sql = SQLFieldGenerate.generaInsertSQL(tableName, dbParams);
+        return insertBySQL(sql, dbParams);
+    }
 
 
 
-        for (DBParam dbParam : dbParams) {
-            String name = dbParam.getName();
-            sql.append(name).append(",");
-        }
-        sql.deleteCharAt(sql.length()).append(")").append("value");
+    @Override
+    public Long insertBySQL(String sql, DBParam... dbParams) {
+        return insertBySQL(new StringBuilder(sql), dbParams);
 
-
-
-
-        return null;
     }
 
     @Override
-    public E insert(T entity) {
-        return null;
+    public Long insertBySQL(StringBuilder sql, DBParam... dbParams) {
+        return SessionUpdateOrInsertExecute.execute(sql, dbParams);
+    }
+
+    @Override
+    public Long insert(T entity) {
+        EntitySQLFieldGenerate entitySQLFieldGenerate = new EntitySQLFieldGenerate(tableName, entity);
+        DBParam[] array = entitySQLFieldGenerate.getDbParamList().toArray(new DBParam[0]);
+        return insertBySQL(entitySQLFieldGenerate.getSQL(), array);
     }
 
     @Override

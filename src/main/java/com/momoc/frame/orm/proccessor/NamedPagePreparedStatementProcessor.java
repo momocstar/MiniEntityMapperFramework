@@ -2,21 +2,13 @@ package com.momoc.frame.orm.proccessor;
 
 import com.momoc.frame.orm.EntityPage;
 import com.momoc.frame.orm.mapper.DBParam;
-import com.momoc.frame.orm.util.ArrayUtil;
-import lombok.Getter;
 
 import java.sql.*;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
-public class NamedPagePreparedStatementProcessor extends NamedPreparedStatementProcessor {
+public class NamedPagePreparedStatementProcessor extends NamedQueryPreparedStatementProcessor {
 
     EntityPage<?> entityPage;
 
-    DBParam[] pageDbParams;
 
     /**
      * 在此方法设置? 参数的其实位置
@@ -70,6 +62,4 @@ public class NamedPagePreparedStatementProcessor extends NamedPreparedStatementP
     protected void preProcessing(StringBuilder parseSQL, DBParam[] dbParams) {
         parseSQL.append(" limit ?,?");
     }
-
-
 }

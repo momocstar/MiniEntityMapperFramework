@@ -21,7 +21,7 @@ public interface BaseEntityQueryMapper<T, E> {
      * @return
      */
     default String getTableName(Class<T> entityClass) {
-        return SelectSqlFieldGenerate.getTableName(entityClass);
+        return SQLFieldGenerate.getTableName(entityClass);
     }
 
     /**
@@ -30,7 +30,7 @@ public interface BaseEntityQueryMapper<T, E> {
      * @return
      */
     default String getAllTableQueryField(Class<T> entityClass) {
-        return SelectSqlFieldGenerate.getAllTableQueryField(entityClass);
+        return SQLFieldGenerate.getAllTableQueryField(entityClass);
     }
 
     default String getSimpleTableQuery(Class<T> entityClass) {

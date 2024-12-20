@@ -40,7 +40,7 @@ public class SessionQueryExecute {
             connection = dataSource.getConnection();
 
             connection = dataSource.getConnection();
-            NamedPreparedStatementProcessor namedPreparedStatementProcessor = new NamedPreparedStatementProcessor(connection, sql, dbParams);
+            NamedQueryPreparedStatementProcessor namedPreparedStatementProcessor = new NamedQueryPreparedStatementProcessor(connection, sql, dbParams);
 
             namedPreparedStatementProcessor.setObject(dbParams);
             PreparedStatement preparedStatement = namedPreparedStatementProcessor.getPreparedStatement();
@@ -76,14 +76,11 @@ public class SessionQueryExecute {
         DataSource dataSource = DatabaseConnectionPool.getDataSource();
         Connection connection = null;
         List<R> ts;
-
         try {
             connection = dataSource.getConnection();
-            NamedPreparedStatementProcessor namedPreparedStatementProcessor = new NamedPreparedStatementProcessor(connection, sql, dbParams);
-
+            NamedQueryPreparedStatementProcessor namedPreparedStatementProcessor = new NamedQueryPreparedStatementProcessor(connection, sql, dbParams);
             namedPreparedStatementProcessor.setObject(dbParams);
             PreparedStatement preparedStatement = namedPreparedStatementProcessor.getPreparedStatement();
-
             ResultSet resultSet = preparedStatement.executeQuery();
             ts = EntityMethodUtil.queryRsToBean(resultSet, entityClass, ClassFieldTableMapperCache.buildFiledSetterMethodMap(entityClass));
             return ts;
