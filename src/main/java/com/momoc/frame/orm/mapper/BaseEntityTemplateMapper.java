@@ -308,44 +308,61 @@ public abstract class BaseEntityTemplateMapper<T, E> implements BaseEntityQueryM
         StringBuilder sql = SQLFieldGenerate.generaInsertSQL(tableName, dbParams);
         return insertBySQL(sql, dbParams);
     }
+    @Override
 
+    public Long insertBySQL(StringBuilder sql, DBParam... dbParams){
+        return SessionUpdateOrInsertExecute.execute(sql, dbParams);
+    }
 
 
     @Override
     public Long insertBySQL(String sql, DBParam... dbParams) {
-        return insertBySQL(new StringBuilder(sql), dbParams);
-
-    }
-
-    @Override
-    public Long insertBySQL(StringBuilder sql, DBParam... dbParams) {
-        return SessionUpdateOrInsertExecute.execute(sql, dbParams);
+        return SessionUpdateOrInsertExecute.execute(new StringBuilder(sql), dbParams);
     }
 
     @Override
     public Long insert(T entity) {
-        EntitySQLFieldGenerate entitySQLFieldGenerate = new EntitySQLFieldGenerate(tableName, entity);
-        DBParam[] array = entitySQLFieldGenerate.getDbParamList().toArray(new DBParam[0]);
-        return insertBySQL(entitySQLFieldGenerate.getSQL(), array);
+        EntityInsertSQLFieldGenerate entityInsertSQLFieldGenerate = new EntityInsertSQLFieldGenerate(tableName, entity);
+        DBParam[] array = entityInsertSQLFieldGenerate.getDbParamList().toArray(new DBParam[0]);
+        return insertBySQL(entityInsertSQLFieldGenerate.getSQL(), array);
     }
 
     @Override
-    public int[] batchEntityInsert(Collection<T> entities) {
-        return new int[0];
+    public long[] batchEntityInsert(Collection<T> entities) {
+
+        EntityInsertSQLFieldGenerate entityInsertSQLFieldGenerate = new EntityInsertSQLFieldGenerate(tableName, this.entityClass);
+
+        ArrayList<DBParam[]> dbParams = new ArrayList<>();
+        for (T entity : entities) {
+            DBParam[] dbParamsArr = entityInsertSQLFieldGenerate.buildEachParam(entity);
+            dbParams.add(dbParamsArr);
+        }
+
+        return SessionUpdateOrInsertExecute.batchExecute(new StringBuilder(entityInsertSQLFieldGenerate.getSQL()), dbParams);
     }
 
     @Override
-    public int[] insertOnDuplicateUpdate(Collection<T> entities) {
-        return new int[0];
+    public long[] insertOnDuplicateUpdate(Collection<T> entities) {
+        EntityInsertSQLFieldGenerate entityInsertSQLFieldGenerate = new EntityInsertSQLFieldGenerate(tableName, this.entityClass, true);
+
+        ArrayList<DBParam[]> dbParams = new ArrayList<>();
+        for (T entity : entities) {
+            DBParam[] dbParamsArr = entityInsertSQLFieldGenerate.buildEachParam(entity);
+            dbParams.add(dbParamsArr);
+        }
+
+        return SessionUpdateOrInsertExecute.batchExecute(new StringBuilder(entityInsertSQLFieldGenerate.getSQL()), dbParams);
     }
 
-    @Override
-    public int[] insertOnDuplicateUpdate(Collection<T> entities, boolean updateNull) {
-        return new int[0];
-    }
 
     @Override
-    public int[] insertOnDuplicateUpdate(String sql, Collection<T> entities, boolean updateNull) {
-        return new int[0];
+    public long[] insertOnDuplicateUpdate( Collection<T> entities, String... fields) {
+        EntityInsertSQLFieldGenerate entityInsertSQLFieldGenerate = new EntityInsertSQLFieldGenerate(tableName, this.entityClass, fields);
+        ArrayList<DBParam[]> dbParams = new ArrayList<>();
+        for (T entity : entities) {
+            DBParam[] dbParamsArr = entityInsertSQLFieldGenerate.buildEachParam(entity);
+            dbParams.add(dbParamsArr);
+        }
+        return SessionUpdateOrInsertExecute.batchExecute(new StringBuilder(entityInsertSQLFieldGenerate.getSQL()), dbParams);
     }
 }

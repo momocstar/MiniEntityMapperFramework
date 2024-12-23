@@ -20,8 +20,9 @@ public class SessionUpdateOrInsertExecute {
 
     private static Logger logger = LoggerFactory.getLogger(DatabaseConnectionPool.class);
 
+
+
     /**
-     * 查询后将结果映射成map
      *
      * @param templateSQL 批处理的模板sql
      * @param dbParams
@@ -35,7 +36,7 @@ public class SessionUpdateOrInsertExecute {
             connection = dataSource.getConnection();
             NamedPreparedStatementProcessor namedPreparedStatementProcessor;
 
-            boolean insert = templateSQL.indexOf(" insert ") != -1;
+            boolean insert = templateSQL.indexOf("insert") != -1;
 //            if (insert){
             namedPreparedStatementProcessor = new NamedPreparedStatementProcessor(connection, templateSQL,
                     dbParams.get(0), Statement.RETURN_GENERATED_KEYS);
@@ -68,13 +69,6 @@ public class SessionUpdateOrInsertExecute {
             }
             return rs;
         } catch (Exception e) {
-            if (connection != null) {
-                try {
-                    connection.rollback();
-                } catch (SQLException ex) {
-                    throw new RuntimeException(ex);
-                }
-            }
             logger.error("Error executing query: {}", templateSQL, e);
         } finally {
             if (connection != null) {

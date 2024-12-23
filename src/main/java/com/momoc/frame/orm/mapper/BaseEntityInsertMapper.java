@@ -1,6 +1,7 @@
 package com.momoc.frame.orm.mapper;
 
 import java.util.Collection;
+import java.util.List;
 
 /**
  * 插入接口实现
@@ -33,18 +34,17 @@ public interface BaseEntityInsertMapper<T> {
      * @param entities 插入成功后，设置对应的ID
      * @return 返回插入情况，
      */
-    int[] batchEntityInsert(Collection<T> entities);
+    long[] batchEntityInsert(Collection<T> entities);
 
 
-    public int[] insertOnDuplicateUpdate(Collection<T> entities);
     /**
-     * 存在根据唯一索引来更新其他值
-     * @param entities 实体
-     * @param updateNull 是否更新空值
+     *
+     *  空值会更新到数据库
+     * @param entities 实体LIst
      * @return
      */
-    int[] insertOnDuplicateUpdate(Collection<T> entities, boolean updateNull);
+    public long[] insertOnDuplicateUpdate(Collection<T> entities);
 
-    int[] insertOnDuplicateUpdate(String sql, Collection<T> entities, boolean updateNull);
 
+    public long[] insertOnDuplicateUpdate( Collection<T> entities, String... fields);
 }

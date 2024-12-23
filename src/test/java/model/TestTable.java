@@ -73,6 +73,6 @@ public class TestTable {
     Timestamp nTimestamp;
 
 
-    @MiniEntityTableFieldName( name = "nTimestamp")
-    String time;
+//    @MiniEntityTableFieldName( name = "nTimestamp")
+//    String time;
 }
