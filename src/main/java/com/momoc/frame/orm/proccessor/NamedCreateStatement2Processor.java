@@ -14,15 +14,15 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+@Getter
 public class NamedCreateStatement2Processor {
     static Logger logger = LoggerFactory.getLogger(NamedCreateStatement2Processor.class);
 
     /**
-     * 过滤正则存在的问题
+     *   过滤sql注入内容
      */
     private static final Pattern S_PATTERN_SAFE = Pattern.compile("(?i)(insert|update|delete|alter|drop|truncate|select)");
 
-    @Getter
     Statement statement;
 
     public NamedCreateStatement2Processor(Connection connection, List<IBatchExecute> iBatchExecutes) throws SQLException {

@@ -1,5 +1,6 @@
 package com.momoc.frame.orm.mapper;
 
+import com.momoc.frame.orm.annotation.AnnotationUtil;
 import com.momoc.frame.orm.annotation.MiniEntityTableFieldName;
 import lombok.Getter;
 
@@ -31,7 +32,10 @@ public class EntityInsertSQLFieldGenerate {
 
     protected Class<?> entityClass;
 
-    boolean generateNullFiled = false;
+    /**
+     * 根据实体生成完成的insert SQL，
+     */
+    boolean generateFullInsertSQL = false;
 
     boolean duplicateOnUpdate = false;
 
@@ -40,7 +44,7 @@ public class EntityInsertSQLFieldGenerate {
     public EntityInsertSQLFieldGenerate(String tableName, Class<?> entityClass) {
         this.entityClass = entityClass;
         //需要生成完整带空行SQL
-        this.generateNullFiled = true;
+        this.generateFullInsertSQL = true;
         buildSQLByClass(tableName);
 
     }
@@ -50,14 +54,14 @@ public class EntityInsertSQLFieldGenerate {
         this.entityClass = entityClass;
         this.duplicateOnUpdate = duplicateOnUpdate;
         //需要生成完整带空行SQL
-        this.generateNullFiled = true;
+        this.generateFullInsertSQL = true;
         buildSQLByClass(tableName);
     }
 
 
     public EntityInsertSQLFieldGenerate(String tableName, Class<?> entityClass, String[] duplicateFields) {
         this.entityClass = entityClass;
-        this.generateNullFiled = true;
+        this.generateFullInsertSQL = true;
         buildSQLByClass(tableName, duplicateFields);
     }
 
@@ -72,11 +76,11 @@ public class EntityInsertSQLFieldGenerate {
      *
      * @param tableName         表名
      * @param entity            实体
-     * @param generateNullFiled 是否生成空值字段SQL，否只生成当前实体对象有值内容
+     * @param generateFullInsertSQL 是否生成空值字段SQL，否只生成当前实体对象有值内容
      * @param <T>
      */
-    public <T> EntityInsertSQLFieldGenerate(String tableName, Object entity, boolean generateNullFiled) {
-        buildByInstanceEntity(tableName, entity, generateNullFiled);
+    public <T> EntityInsertSQLFieldGenerate(String tableName, Object entity, boolean generateFullInsertSQL) {
+        buildByInstanceEntity(tableName, entity, generateFullInsertSQL);
     }
 
 
@@ -103,8 +107,7 @@ public class EntityInsertSQLFieldGenerate {
 
         for (Field declaredField : aClass.getDeclaredFields()) {
             declaredField.setAccessible(true);
-            MiniEntityTableFieldName annotation = declaredField.getAnnotation(MiniEntityTableFieldName.class);
-            String name = annotation != null ? annotation.name() : declaredField.getName();
+            String name = AnnotationUtil.getFieldName(declaredField);
             try {
                 Object value = declaredField.get(entity);
                 if (value != null) {
@@ -156,8 +159,7 @@ public class EntityInsertSQLFieldGenerate {
 
         for (Field declaredField : entityClass.getDeclaredFields()) {
             declaredField.setAccessible(true);
-            MiniEntityTableFieldName annotation = declaredField.getAnnotation(MiniEntityTableFieldName.class);
-            String name = annotation != null ? annotation.name() : declaredField.getName();
+            String name = AnnotationUtil.getFieldName(declaredField);
             sql.append(name).append(",");
             values.append("@").append(name).append(",");
             if (duplicateOnUpdate) {
@@ -188,8 +190,7 @@ public class EntityInsertSQLFieldGenerate {
 
         for (Field declaredField : entityClass.getDeclaredFields()) {
             declaredField.setAccessible(true);
-            MiniEntityTableFieldName annotation = declaredField.getAnnotation(MiniEntityTableFieldName.class);
-            String name = annotation != null ? annotation.name() : declaredField.getName();
+            String name = AnnotationUtil.getFieldName(declaredField);
             sql.append(name).append(",");
             values.append("@").append(name).append(",");
         }
@@ -212,7 +213,7 @@ public class EntityInsertSQLFieldGenerate {
             try {
                 declaredFields[i].setAccessible(true);
                 Object value = declaredFields[i].get(entity);
-                if (value != null || generateNullFiled) {
+                if (value != null || generateFullInsertSQL) {
                     dbParams[i] = new DBParam(declaredFields[i].getName(), value);
                 }
             } catch (IllegalAccessException e) {
@@ -224,48 +225,7 @@ public class EntityInsertSQLFieldGenerate {
     }
 
 
-    /**
-     * 生成INSERT INTO ... ON DUPLICATE KEY UPDATE语句
-     * @param tableName         表名
-     * @param entity            实体
-     * @param generateNullFiled 是否生成空值字段SQL
-     * @param <T>
-     */
-//    public void insertOnDuplicateUpdate(String tableName,   boolean generateNullFiled) {
-//        StringBuilder sql = new StringBuilder("INSERT INTO ").append(tableName).append("(");
-//        StringBuilder values = new StringBuilder("VALUES(");
-//        StringBuilder onUpdate = new StringBuilder("ON DUPLICATE KEY UPDATE ");
-//        ArrayList<DBParam> dbParams = new ArrayList<>();
-//
-//        Class<?> aClass = entity.getClass();
-//        for (Field declaredField : aClass.getDeclaredFields()) {
-//            declaredField.setAccessible(true);
-//            MiniEntityTableFieldName annotation = declaredField.getAnnotation(MiniEntityTableFieldName.class);
-//            String name = annotation != null ? annotation.name() : declaredField.getName();
-//
-//            try {
-//                Object value = declaredField.get(entity);
-//                if (value != null || generateNullFiled) {
-//                    sql.append(name).append(",");
-//                    values.append("@").append(name).append(",");
-//                    if (generateNullFiled || value != null) {
-//                        onUpdate.append(name).append("=VALUES(").append(name).append("),");
-//                    }
-//                    dbParams.add(new DBParam(name, value));
-//                }
-//            } catch (IllegalAccessException e) {
-//                throw new RuntimeException(e);
-//            }
-//        }
-//
-//        sql.deleteCharAt(sql.length() - 1).append(") ");
-//        values.deleteCharAt(values.length() - 1).append(")");
-//        onUpdate.deleteCharAt(onUpdate.length() - 1);
-//
-//        this.SQL = sql.append(values).append(onUpdate);
-//        this.dbParamList = dbParams;
-//        this.entityClass = entity.getClass();
-//    }
+
 }
 
 

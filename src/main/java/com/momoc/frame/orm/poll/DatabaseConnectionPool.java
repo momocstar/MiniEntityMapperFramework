@@ -22,14 +22,12 @@ public class DatabaseConnectionPool {
         if (dataSource == null) {
             dataSource = getSource();
         }
-
-
         DatabaseConnectionPool.dataSource = dataSource;
     }
 
-    static {
-        initializingDataSource(null);
-    }
+//    static {
+//        initializingDataSource(null);
+//    }
 
     private static DataSource getSource() {
         DataSource dataSource;

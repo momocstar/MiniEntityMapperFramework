@@ -6,8 +6,6 @@ import com.momoc.frame.orm.util.ArrayUtil;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 public class EntityUpdateSQLFieldGenerate implements IBatchExecute {
 

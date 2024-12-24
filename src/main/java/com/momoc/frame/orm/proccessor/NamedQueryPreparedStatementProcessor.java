@@ -44,6 +44,7 @@ public class NamedQueryPreparedStatementProcessor extends NamedPreparedStatement
                     sql.append(dbParam.getName()).append(" = ").append('@' + dbParam.getName()).append(" and ");
                 }
             }
+            //删除多余的AND
             sql.delete(sql.length() - 4, sql.length());
         }
         super.handlerWhereParams(sql, dbParams);

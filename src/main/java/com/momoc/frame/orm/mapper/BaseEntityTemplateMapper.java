@@ -57,9 +57,11 @@ public abstract class BaseEntityTemplateMapper<T, E> implements BaseEntityQueryM
 
     @Override
     public T queryOneById(E id) {
-        StringBuilder sql = new StringBuilder(allTableQueryField + " where id = @id limit 1");
+        StringBuilder sql = new StringBuilder(allTableQueryField + " where ");
 
-        List<T> ts = SessionQueryExecute.queryBeanSql(sql, this.entityClass, (new DBParam("id", id)));
+        sql.append(IDName).append(" = ").append("@").append(IDName).append("  limit 1");
+
+        List<T> ts = SessionQueryExecute.queryBeanSql(sql, this.entityClass, (new DBParam(IDName, id)));
         return ts.isEmpty() ? null : ts.get(0);
 
 
@@ -69,7 +71,7 @@ public abstract class BaseEntityTemplateMapper<T, E> implements BaseEntityQueryM
     @Override
     public List<T> queryListByIds(Collection<E> ids) {
         StringBuilder sql = new StringBuilder(allTableQueryField);
-        List<T> ts = SessionQueryExecute.queryBeanSql(sql, this.entityClass, new DBParam("id", ids));
+        List<T> ts = SessionQueryExecute.queryBeanSql(sql, this.entityClass, new DBParam(IDName, ids));
         return ts;
     }
 

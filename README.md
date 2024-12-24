@@ -7,9 +7,9 @@ CRUD  分页查询、批量插入
 
 2、做一个ORM插件代码生成
 
-3 支持Spring OR 手动初始化
+3 支持Spring OR 手动初始化, 创建一个autoConfig项目
 
-4、支持特殊的原生连接池
+4、传入dataSource对象即可初始化
 
 5、数据库命名字段映射，驼峰 OR A_B
 

@@ -1,8 +1,9 @@
 package com.momoc.frame.orm.mapper;
 
+import com.momoc.frame.orm.annotation.AnnotationUtil;
 import com.momoc.frame.orm.annotation.EntityID;
-import com.momoc.frame.orm.annotation.MiniEntityTableFieldName;
 import com.momoc.frame.orm.annotation.MiniEntityTableName;
+import com.mysql.cj.util.StringUtils;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -32,13 +33,7 @@ public class SQLFieldGenerate {
 
         for (Field declaredField : entityClass.getDeclaredFields()) {
             declaredField.setAccessible(true);
-            MiniEntityTableFieldName annotation = declaredField.getAnnotation(MiniEntityTableFieldName.class);
-            String name;
-            if (annotation != null) {
-                name = annotation.name();
-            } else {
-                name = declaredField.getName();
-            }
+            String name = AnnotationUtil.getFieldName(declaredField);
             if (sb.indexOf(name) == -1) {
                 sb.append(name).append(",");
             }
@@ -94,8 +89,7 @@ public class SQLFieldGenerate {
 
         for (Field declaredField : aClass.getDeclaredFields()) {
             declaredField.setAccessible(true);
-            MiniEntityTableFieldName annotation = declaredField.getAnnotation(MiniEntityTableFieldName.class);
-            String name = annotation != null ? annotation.name() : declaredField.getName();
+            String name = AnnotationUtil.getFieldName(declaredField);
             try {
                 Object value = declaredField.get(entity);
                 if (value != null) {
@@ -120,7 +114,7 @@ public class SQLFieldGenerate {
             declaredField.setAccessible(true);
             EntityID annotation = declaredField.getAnnotation(EntityID.class);
             if (annotation != null) {
-                IDName = annotation.name();
+                IDName = StringUtils.isNullOrEmpty(annotation.name()) ? declaredField.getName() : annotation.name();
             }
         }
         return IDName;

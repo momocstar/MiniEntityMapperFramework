@@ -1,7 +1,6 @@
 package model;
 
 import com.momoc.frame.orm.annotation.EntityID;
-import com.momoc.frame.orm.annotation.MiniEntityTableFieldName;
 import com.momoc.frame.orm.annotation.MiniEntityTableName;
 import lombok.Data;
 
@@ -15,10 +14,10 @@ import java.util.Date;
  */
 @MiniEntityTableName(name = "TestTable")
 @Data
-public class TestTable {
+public class TestTable2 {
 
     @EntityID(name = "id")
-    Integer id;
+    Integer test;
 
     String name;
 

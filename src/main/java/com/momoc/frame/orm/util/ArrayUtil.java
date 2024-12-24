@@ -4,7 +4,7 @@ import com.momoc.frame.orm.mapper.DBParam;
 
 public class ArrayUtil {
     /**
-     * 两个数组合并成一个，返回新的数组
+     * 两个数组合并成一个，返回新的数组,浅拷贝
      * @param originalArray 旧数据
      * @param newElements 新内容
      * @return

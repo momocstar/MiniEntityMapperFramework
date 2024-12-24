@@ -5,6 +5,7 @@ import java.util.Map;
 /**
  * 自定义类型转换扩展接口
  */
+@FunctionalInterface
 public interface MapConvertToBean<T> {
 
 

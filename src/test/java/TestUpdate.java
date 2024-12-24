@@ -1,24 +1,28 @@
 import com.momoc.frame.orm.asm.EntityDynamicClassLoader;
 import com.momoc.frame.orm.mapper.BaseEntityTemplateMapper;
 import com.momoc.frame.orm.mapper.DBParam;
+import com.momoc.frame.orm.poll.DatabaseConnectionPool;
 import model.TestTable;
 
+import javax.sql.DataSource;
 import java.util.ArrayList;
 import java.util.Collections;
 
 public class TestUpdate {
 
     public static void main(String[] args) {
+        DataSource dataSource = DatabaseConnectionPool.getDataSource();
+        DatabaseConnectionPool.initializingDataSource(dataSource);
         BaseEntityTemplateMapper<TestTable, Integer> baseEntityTemplateMapper = EntityDynamicClassLoader.generateMapperTemplateClass(TestTable.class, Integer.class);
 
         boolean b = baseEntityTemplateMapper.updateById(21, new DBParam("age", "22"));
         System.out.println(b);
 
         TestTable testTable = baseEntityTemplateMapper.queryOneById(21);
-        testTable.setAge("32");
+        testTable.setAge("33");
 
         TestTable testTable2 = baseEntityTemplateMapper.queryOneById(22);
-        testTable2.setAge("32");
+        testTable2.setAge("33");
 
         ArrayList<TestTable> testTables = new ArrayList<TestTable>() {{
             add(testTable);
