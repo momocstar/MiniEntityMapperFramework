@@ -1,12 +1,13 @@
 package com.momoc.frame.orm.mapper;
 
-public interface BaseEntityDeleteMapper<T,E> {
+import java.util.List;
 
-    boolean delete(T entity);
+public interface BaseEntityDeleteMapper<E> {
 
     boolean deleteById(E id);
 
-    int[] deleteByIds(E ids);
+    boolean deleteByIds(List<E> ids);
 
+    boolean deleteEntities(DBParam... dbParams);
 
 }

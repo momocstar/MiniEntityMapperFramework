@@ -29,10 +29,10 @@ public class TestInsert {
         long[] longs = baseEntityTemplateMapper.batchEntityInsert(Collections.singletonList(testTable));
         System.out.println("insert = " + longs[0]);
 
-        testTable.setId("14");
+        testTable.setId(14);
         testTable.setAge("91");
         baseEntityTemplateMapper.insertOnDuplicateUpdate(Collections.singletonList(testTable));
-        testTable.setId("15");
+        testTable.setId(15);
         testTable.setAge("91");
         baseEntityTemplateMapper.insertOnDuplicateUpdate(Collections.singletonList(testTable), "age");
 

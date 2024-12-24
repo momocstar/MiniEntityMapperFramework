@@ -5,6 +5,7 @@ import com.momoc.frame.orm.convert.MapConvertToBean;
 
 import java.util.*;
 
+import com.momoc.frame.orm.poll.BaseSessionOperation;
 import com.momoc.frame.orm.poll.SessionQueryExecute;
 import com.momoc.frame.orm.poll.SessionUpdateOrInsertExecute;
 import lombok.Getter;
@@ -12,7 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
-public abstract class BaseEntityTemplateMapper<T, E> implements BaseEntityQueryMapper<T, E>, BaseEntityInsertMapper<T> {
+public abstract class BaseEntityTemplateMapper<T, E> implements BaseEntityQueryMapper<T, E>, BaseEntityInsertMapper<T>, BaseEntityUpdateMapper<T, E> ,BaseEntityDeleteMapper<E>{
 
 
     private final Logger logger = LoggerFactory.getLogger(BaseEntityTemplateMapper.class);
@@ -22,6 +23,7 @@ public abstract class BaseEntityTemplateMapper<T, E> implements BaseEntityQueryM
         allTableQueryField = this.getAllTableQueryField(entityClass);
         this.eClass = eClass;
         this.tableName = this.getTableName(entityClass);
+        this.IDName = this.getIDName(entityClass);
     }
 
 
@@ -35,6 +37,8 @@ public abstract class BaseEntityTemplateMapper<T, E> implements BaseEntityQueryM
      * 主键类Class
      */
     public Class<E> eClass;
+
+    public String IDName;
 
 
     /**
@@ -308,9 +312,10 @@ public abstract class BaseEntityTemplateMapper<T, E> implements BaseEntityQueryM
         StringBuilder sql = SQLFieldGenerate.generaInsertSQL(tableName, dbParams);
         return insertBySQL(sql, dbParams);
     }
+
     @Override
 
-    public Long insertBySQL(StringBuilder sql, DBParam... dbParams){
+    public Long insertBySQL(StringBuilder sql, DBParam... dbParams) {
         return SessionUpdateOrInsertExecute.execute(sql, dbParams);
     }
 
@@ -356,7 +361,7 @@ public abstract class BaseEntityTemplateMapper<T, E> implements BaseEntityQueryM
 
 
     @Override
-    public long[] insertOnDuplicateUpdate( Collection<T> entities, String... fields) {
+    public long[] insertOnDuplicateUpdate(Collection<T> entities, String... fields) {
         EntityInsertSQLFieldGenerate entityInsertSQLFieldGenerate = new EntityInsertSQLFieldGenerate(tableName, this.entityClass, fields);
         ArrayList<DBParam[]> dbParams = new ArrayList<>();
         for (T entity : entities) {
@@ -364,5 +369,80 @@ public abstract class BaseEntityTemplateMapper<T, E> implements BaseEntityQueryM
             dbParams.add(dbParamsArr);
         }
         return SessionUpdateOrInsertExecute.batchExecute(new StringBuilder(entityInsertSQLFieldGenerate.getSQL()), dbParams);
+    }
+
+
+    @Override
+    public boolean updateById(E id, DBParam... dbParams) {
+        DBParam dbParam = new DBParam(IDName, id);
+
+        EntityUpdateSQLFieldGenerate entityUpdateSQLFieldGenerate = new EntityUpdateSQLFieldGenerate(tableName,  new DBParam[]{dbParam}, dbParams);
+        long[] rs = SessionUpdateOrInsertExecute.batchExecute(Collections.singletonList(entityUpdateSQLFieldGenerate));
+        return rs.length > 0 && rs[0] > 0;
+    }
+
+
+    @Override
+    public long[] update(List<T> entities) {
+        return update(entities, false);
+    }
+
+    @Override
+    public boolean update(T entity) {
+
+        return this.update(entity, false);
+    }
+
+    @Override
+    public long[] update(List<T> entities, Boolean updateNUll) {
+        ArrayList<IBatchExecute> iBatchExecutes = new ArrayList<>(entities.size());
+        for (T entity : entities) {
+            EntityUpdateSQLFieldGenerate entityUpdateSQLFieldGenerate = new EntityUpdateSQLFieldGenerate(tableName, entity, updateNUll);
+            iBatchExecutes.add(entityUpdateSQLFieldGenerate);
+        }
+        return SessionUpdateOrInsertExecute.batchExecute(iBatchExecutes);
+    }
+
+    @Override
+    public boolean updateBySQL(String sql, DBParam... dbParams) {
+        EntityUpdateSQLFieldGenerate entityUpdateSQLFieldGenerate = new EntityUpdateSQLFieldGenerate(sql, dbParams);
+        long[] rs = SessionUpdateOrInsertExecute.batchExecute(Collections.singletonList(entityUpdateSQLFieldGenerate));
+        return rs.length > 0 && rs[0] > 0;
+    }
+
+    @Override
+    public boolean update(T entity, Boolean updateNUll) {
+        EntityUpdateSQLFieldGenerate entityUpdateSQLFieldGenerate = new EntityUpdateSQLFieldGenerate(tableName, entity, updateNUll);
+        long[] rs = SessionUpdateOrInsertExecute.batchExecute(Collections.singletonList(entityUpdateSQLFieldGenerate));
+        return rs.length > 0 && rs[0] > 0;
+    }
+
+
+    @Override
+    public boolean deleteById(E id) {
+        StringBuilder sql = new StringBuilder();
+        sql.append("delete from ").append(tableName) .append( " where ").append(IDName).append(" = @id");
+        return  BaseSessionOperation.execute(sql, new DBParam[]{new DBParam("id", id)});
+    }
+
+    @Override
+    public boolean deleteByIds(List<E> ids) {
+        StringBuilder sql = new StringBuilder();
+        sql.append("delete from ").append(tableName) .append( " where ").append(IDName).append(" in (@ids)");
+        return  BaseSessionOperation.execute(sql, new DBParam[]{new DBParam("ids", ids)});
+    }
+
+    @Override
+    public boolean deleteEntities(DBParam... dbParams) {
+        StringBuilder sql = new StringBuilder();
+        sql.append("delete from ").append(tableName) .append( " where ");
+        for (DBParam dbParam : dbParams) {
+            if (dbParam.isCollection()){
+                sql.append(dbParam.getName()).append(" in (@").append(dbParam.getName()).append(") ");
+            }else{
+                sql.append(dbParam.getName()).append(" = @").append(dbParam.getName()).append(" ");
+            }
+        }
+        return BaseSessionOperation.execute(sql, dbParams);
     }
 }

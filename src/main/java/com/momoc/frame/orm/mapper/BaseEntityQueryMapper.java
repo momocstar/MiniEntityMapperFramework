@@ -23,6 +23,9 @@ public interface BaseEntityQueryMapper<T, E> {
     default String getTableName(Class<T> entityClass) {
         return SQLFieldGenerate.getTableName(entityClass);
     }
+    default String getIDName(Class<T> entityClass) {
+        return SQLFieldGenerate.getIDName(entityClass);
+    }
 
     /**
      * 获取实体的所有字段的查询sql

@@ -15,7 +15,8 @@ import java.util.Date;
 @MiniEntityTableName(name = "TestTable")
 @Data
 public class TestTable {
-    String id;
+
+    Integer id;
 
     String name;
 

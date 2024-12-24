@@ -45,10 +45,7 @@ public class NamedPreparedStatementProcessor  {
     }
 
 
-    /**
-     * 过滤正则存在的问题
-     */
-    private static final Pattern S_PATTERN_SAFE = Pattern.compile("(?i)(insert|update|delete|alter|drop|truncate)");
+
 
 
 
@@ -84,8 +81,6 @@ public class NamedPreparedStatementProcessor  {
         /**
          * 获取参数顺序
          */
-
-
         Integer index = 1;
         while (matcher.find()) {
             String key = matcher.group(1);

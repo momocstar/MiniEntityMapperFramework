@@ -123,6 +123,9 @@ public class EntityMethodUtil {
      */
     public static void setterFieldValue(Object methodParam, Object instance, List<Method> methods) {
         try {
+            if (methodParam == null) {
+                return;
+            }
 //            if (method == null) {
 //                String setterName = fieldName;
 //                if (!fieldName.contains("set")) {
@@ -153,6 +156,7 @@ public class EntityMethodUtil {
 //            }else if (methodParam instanceof String) {
 //
 //            }
+
 
             for (Method method : methods) {
                 Parameter[] parameters = method.getParameters();

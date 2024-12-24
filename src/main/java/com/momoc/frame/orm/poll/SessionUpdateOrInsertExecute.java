@@ -1,6 +1,8 @@
 package com.momoc.frame.orm.poll;
 
 import com.momoc.frame.orm.mapper.DBParam;
+import com.momoc.frame.orm.mapper.IBatchExecute;
+import com.momoc.frame.orm.proccessor.NamedCreateStatement2Processor;
 import com.momoc.frame.orm.proccessor.NamedPreparedStatementProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,6 +22,53 @@ public class SessionUpdateOrInsertExecute {
 
     private static Logger logger = LoggerFactory.getLogger(DatabaseConnectionPool.class);
 
+
+    /**
+     * 批量SQL处理
+     * @param iBatchExecutes
+     * @return
+     */
+
+    public static long[] batchExecute(List<IBatchExecute> iBatchExecutes){
+        DataSource dataSource = DatabaseConnectionPool.getDataSource();
+        Connection connection = null;
+
+        try {
+            connection = dataSource.getConnection();
+            NamedCreateStatement2Processor namedCreateStatement2Processor = new NamedCreateStatement2Processor(connection, iBatchExecutes);
+            Statement statement = namedCreateStatement2Processor.getStatement();
+
+            int[] ints = statement.executeBatch();
+            long[] rs = new long[ints.length];
+            ResultSet generatedKeys = statement.getGeneratedKeys();
+            if (generatedKeys != null) {
+                int pos = 0;
+                while (generatedKeys.next()) {
+                    long generatedKey = generatedKeys.getLong(1);
+                    rs[pos] = generatedKey;
+                }
+                if (pos == ints.length)
+                {
+                    return rs;
+                }
+            }
+            for (int i = 0; i < ints.length; i++) {
+                rs[i] = ints[i];
+            }
+            return rs;
+        } catch (Exception e) {
+            logger.error("Error executing query: ",  e);
+            throw new RuntimeException(e);
+        } finally {
+            if (connection != null) {
+                try {
+                    connection.close();
+                } catch (SQLException e) {
+                    logger.error("Error closing connection", e);
+                }
+            }
+        }
+    }
 
 
     /**
@@ -83,13 +132,7 @@ public class SessionUpdateOrInsertExecute {
 
     }
 
-    /**
-     * 查询后将结果映射成map
-     *
-     * @param templateSQL 批处理的模板sql
-     * @param dbParams
-     * @return ID
-     */
+
     public static Long execute(StringBuilder templateSQL, DBParam[] dbParams) {
         DataSource dataSource = DatabaseConnectionPool.getDataSource();
         Connection connection = null;
@@ -114,8 +157,8 @@ public class SessionUpdateOrInsertExecute {
             }
             return 0L;
         } catch (Exception e) {
-            logger.error("Error executing query: {}", templateSQL, e);
-            return -1L;
+            logger.error("Error executing: {}", templateSQL, e);
+            throw new RuntimeException(e);
         } finally {
             if (connection != null) {
                 try {

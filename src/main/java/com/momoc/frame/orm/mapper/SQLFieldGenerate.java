@@ -1,5 +1,6 @@
 package com.momoc.frame.orm.mapper;
 
+import com.momoc.frame.orm.annotation.EntityID;
 import com.momoc.frame.orm.annotation.MiniEntityTableFieldName;
 import com.momoc.frame.orm.annotation.MiniEntityTableName;
 
@@ -110,5 +111,18 @@ public class SQLFieldGenerate {
         sql.deleteCharAt(sql.length() - 1).append(") ");
         values.deleteCharAt(values.length() - 1).append(")");
         return sql.append(values);
+    }
+
+
+    public static String getIDName(Class<?> entityClass) {
+        String IDName = "id";
+        for (Field declaredField : entityClass.getDeclaredFields()) {
+            declaredField.setAccessible(true);
+            EntityID annotation = declaredField.getAnnotation(EntityID.class);
+            if (annotation != null) {
+                IDName = annotation.name();
+            }
+        }
+        return IDName;
     }
 }
