@@ -34,12 +34,10 @@ public class SessionQueryExecute {
      * @return
      */
     public static List<Map<String, Object>> queryMapSql(StringBuilder sql, DBParam... dbParams) {
-        DataSource dataSource = DatabaseConnectionPool.getDataSource();
         Connection connection = null;
         try {
-            connection = dataSource.getConnection();
+            connection = DatabaseConnectionPool.getConnection();
 
-            connection = dataSource.getConnection();
             NamedQueryPreparedStatementProcessor namedPreparedStatementProcessor = new NamedQueryPreparedStatementProcessor(connection, sql, dbParams);
 
             namedPreparedStatementProcessor.setObject(dbParams);
@@ -54,13 +52,7 @@ public class SessionQueryExecute {
             logger.error("Error executing query: {}", sql, e);
             throw new RuntimeException(e);
         } finally {
-            if (connection != null) {
-                try {
-                    connection.close();
-                } catch (SQLException e) {
-                    logger.error("Error closing connection", e);
-                }
-            }
+            DatabaseConnectionPool.close(connection);
         }
 
     }
@@ -73,11 +65,11 @@ public class SessionQueryExecute {
 
 
     public static <R> List<R> queryBeanSql(StringBuilder sql, Class<R> entityClass, DBParam... dbParams)  {
-        DataSource dataSource = DatabaseConnectionPool.getDataSource();
         Connection connection = null;
         List<R> ts;
         try {
-            connection = dataSource.getConnection();
+            connection = DatabaseConnectionPool.getConnection();
+
             NamedQueryPreparedStatementProcessor namedPreparedStatementProcessor = new NamedQueryPreparedStatementProcessor(connection, sql, dbParams);
             namedPreparedStatementProcessor.setObject(dbParams);
             PreparedStatement preparedStatement = namedPreparedStatementProcessor.getPreparedStatement();
@@ -88,24 +80,17 @@ public class SessionQueryExecute {
             logger.error("Error executing query: {}", sql, e);
             throw new RuntimeException(e);
         } finally {
-            if (connection != null) {
-                try {
-                    connection.close();
-                } catch (SQLException e) {
-                    logger.error("Error closing connection", e);
-                }
-            }
+            DatabaseConnectionPool.close(connection);
         }
     }
 
 
     public static <R> List<R> queryPageBeanSql(StringBuilder sql, Class<R> entityClass, EntityPage<R> entityPage,  DBParam... dbParams)  {
-        DataSource dataSource = DatabaseConnectionPool.getDataSource();
         Connection connection = null;
         List<R> ts;
 
         try {
-            connection = dataSource.getConnection();
+            connection = DatabaseConnectionPool.getConnection();
             NamedPagePreparedStatementProcessor namedPreparedStatementProcessor = new NamedPagePreparedStatementProcessor(connection, sql,dbParams, entityPage);
             namedPreparedStatementProcessor.setObject(dbParams);
             PreparedStatement preparedStatement = namedPreparedStatementProcessor.getPreparedStatement();
@@ -116,13 +101,7 @@ public class SessionQueryExecute {
             logger.error("Error executing query: {}", sql, e);
             throw new RuntimeException(e);
         } finally {
-            if (connection != null) {
-                try {
-                    connection.close();
-                } catch (SQLException e) {
-                    logger.error("Error closing connection", e);
-                }
-            }
+            DatabaseConnectionPool.close(connection);
         }
     }
 

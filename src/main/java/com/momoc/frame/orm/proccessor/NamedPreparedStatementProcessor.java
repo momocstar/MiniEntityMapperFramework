@@ -87,7 +87,7 @@ public class NamedPreparedStatementProcessor  {
             indexesMap.put(key, index);
             index++;
         }
-        int max = index;
+        int max = index - 1;
         //变偏移量,遇到collection时需要进行偏移
         Integer offset = 0;
         for (DBParam dbParam : dbParams) {
@@ -98,17 +98,17 @@ public class NamedPreparedStatementProcessor  {
                 for (int i = 0; i < dbParam.getCollectionSize(); i++) {
                     N.append("?").append(",");
                 }
+                //本身占了一个位置，还需要N - 1个
                 offset += dbParam.getCollectionSize() - 1;
                 N.deleteCharAt(N.length() - 1);
                 sql.replace(start, start + key.length(), N.toString());
             } else {
                 int finalIndex = indexesMap.get(dbParam.getName()) + offset;
                 indexesMap.put(dbParam.getName(), finalIndex);
-                max = Math.max(max, finalIndex);
                 sql.replace(start, start + key.length(), "?");
             }
         }
-        return max;
+        return max + offset;
     }
 
     public void setObject(DBParam... dbParams) throws SQLException {

@@ -58,13 +58,17 @@ public class TestQuery {
 
         System.out.println("====================");
 
-        List<TestTable> queryBeanListByMap = baseEntityTemplateMapper.queryBeanListByMap( TestTable.class,new DBParam("age", 40),new DBParam("id", entities), new DBParam("name", "test2"));
+        List<TestTable> queryBeanListByMap = baseEntityTemplateMapper.queryBeanListByMap( TestTable.class,new DBParam("age", 20));
         System.out.println("queryBeanListByMap:"  + queryBeanListByMap);
 
         System.out.println("====================");
 
         EntityPage<TestTable> testTableEntityPage = new EntityPage<>();
-        baseEntityTemplateMapper.queryPageByMap( testTableEntityPage, new DBParam("id", entities));
+        baseEntityTemplateMapper.queryPageByMap( testTableEntityPage, new DBParam("age", 20), new DBParam("id", entities), new DBParam("sBigInt", 10000));
+        System.out.println("queryPageByMap:"  + testTableEntityPage);
+        System.out.println("====================");
+
+        baseEntityTemplateMapper.queryPageByMap( testTableEntityPage, new DBParam("id", entities), new DBParam("age", 20));
         System.out.println("queryPageByMap:"  + testTableEntityPage);
         System.out.println("====================");
 
@@ -113,13 +117,13 @@ public class TestQuery {
 
         System.out.println("====================");
 
-        List<TestTable2> queryBeanListByMap = baseEntityTemplateMapper.queryBeanListByMap( TestTable2.class,new DBParam("age", 40),new DBParam("id", entities), new DBParam("name", "test2"));
+        List<TestTable2> queryBeanListByMap = baseEntityTemplateMapper.queryBeanListByMap( TestTable2.class,new DBParam("age", 20));
         System.out.println("queryBeanListByMap:"  + queryBeanListByMap);
 
         System.out.println("====================");
 
         EntityPage<TestTable2> testTableEntityPage = new EntityPage<>();
-        baseEntityTemplateMapper.queryPageByMap( testTableEntityPage, new DBParam("id", entities));
+        baseEntityTemplateMapper.queryPageByMap( testTableEntityPage, new DBParam("age", 20));
         System.out.println("queryPageByMap:"  + testTableEntityPage);
         System.out.println("====================");
     }

@@ -1,5 +1,6 @@
 package com.momoc.frame.orm.poll;
 
+import com.momoc.frame.orm.transaction.EntityTransactionManager;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import lombok.Getter;
@@ -7,6 +8,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.sql.DataSource;
+import java.sql.Connection;
+import java.sql.SQLException;
 
 
 public class DatabaseConnectionPool {
@@ -25,9 +28,26 @@ public class DatabaseConnectionPool {
         DatabaseConnectionPool.dataSource = dataSource;
     }
 
-//    static {
-//        initializingDataSource(null);
-//    }
+    public static Connection getConnection() throws SQLException {
+        if (EntityTransactionManager.isOpenTransaction()) {
+            return EntityTransactionManager.getConnection();
+        }else{
+            //没有开启事务则自身获取数据库连接
+            return dataSource.getConnection();
+        }
+    }
+
+    public static void close(Connection connection) {
+        //没有手动在方法外开起事务，直接被关闭
+        if (connection != null && !EntityTransactionManager.isOpenTransaction()) {
+            try {
+                connection.close();
+            } catch (SQLException e) {
+                logger.error("Error closing connection", e);
+            }
+        }
+    }
+
 
     private static DataSource getSource() {
         DataSource dataSource;
@@ -38,99 +58,9 @@ public class DatabaseConnectionPool {
         config.addDataSourceProperty("cachePrepStmts", "true"); // 启用PSCache
         config.addDataSourceProperty("prepStmtCacheSize", "2500"); // 设置PSCache大小
         config.addDataSourceProperty("prepStmtCacheSqlLimit", "20480"); // 设置PSCache SQL长度限制
+        config.setAutoCommit(false);
         dataSource = new HikariDataSource(config);
         return dataSource;
     }
-
-
-//    public <R>  List<R> querySql(StringBuilder sql, Map<String, Object> dbParams, Class<R> entityClass) {
-//        DataSource dataSource = DatabaseConnectionPool.getDataSource();
-//        Connection connection = null;
-//        List<R> ts = new ArrayList<>();
-//        try {
-//
-//            connection = dataSource.getConnection();
-//
-//            ArrayList<Object> list = new ArrayList<>();
-//            // 使用正则表达式匹配所有的参数占位符
-//            Pattern pattern = Pattern.compile("@(\\w+)");
-//            Matcher matcher = pattern.matcher(sql);
-//            while (matcher.find()) {
-//                String key = matcher.group(1); // 获取参数名（去除 @）
-//                //替换为？
-//                sql.replace(matcher.start(), matcher.end(), "?");
-//                Object value = dbParams.get(key);
-//                list.add(value);
-//            }
-//            String finalSql = sql.toString();
-//            logger.debug("entity mapper query sql: {}", finalSql);
-//            PreparedStatement statement = connection.prepareStatement(finalSql);
-//
-//            for (int i = 0; i < list.size(); i++) {
-//                statement.setObject(i + 1, list.get(i));
-//            }
-//
-//            /**
-//             * @Todo 超时可配置
-//             */
-//            ResultSet resultSet = statement.executeQuery();
-//            ts = EntityMethodUtil.queryRsToBean(resultSet, entityClass, EntityMethodUtil.buildFiledSetterMethodMap(entityClass));
-//            return ts;
-//        } catch (Exception e) {
-//            throw new RuntimeException(e);
-//        } finally {
-//            if (connection != null) {
-//                try {
-//                    connection.close();
-//                } catch (SQLException e) {
-//                    throw new RuntimeException(e);
-//                }
-//            }
-//        }
-//    }
-//    public <R>  List<R> querySql(StringBuilder sql, Map<String, Object> dbParams, Class<R> entityClass) {
-//        DataSource dataSource = DatabaseConnectionPool.getDataSource();
-//        Connection connection = null;
-//        List<R> ts = new ArrayList<>();
-//        try {
-//
-//            connection = dataSource.getConnection();
-//
-//            ArrayList<Object> list = new ArrayList<>();
-//            // 使用正则表达式匹配所有的参数占位符
-//            Pattern pattern = Pattern.compile("@(\\w+)");
-//            Matcher matcher = pattern.matcher(sql);
-//            while (matcher.find()) {
-//                String key = matcher.group(1); // 获取参数名（去除 @）
-//                //替换为？
-//                sql.replace(matcher.start(), matcher.end(), "?");
-//                Object value = dbParams.get(key);
-//                list.add(value);
-//            }
-//            String finalSql = sql.toString();
-//            PreparedStatement statement = connection.prepareStatement(finalSql);
-//
-//            for (int i = 0; i < list.size(); i++) {
-//                statement.setObject(i + 1, list.get(i));
-//            }
-//            logger.debug("entity mapper query sql: {}", finalSql);
-//            /**
-//             * @Todo 超时可配置
-//             */
-//            ResultSet resultSet = statement.executeQuery();
-//            ts = EntityMethodUtil.queryRsToBean(resultSet, entityClass, EntityMethodUtil.buildFiledSetterMethodMap(entityClass));
-//            return ts;
-//        } catch (Exception e) {
-//            throw new RuntimeException(e);
-//        } finally {
-//            if (connection != null) {
-//                try {
-//                    connection.close();
-//                } catch (SQLException e) {
-//                    throw new RuntimeException(e);
-//                }
-//            }
-//        }
-//    }
 
 }

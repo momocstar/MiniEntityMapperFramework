@@ -30,11 +30,10 @@ public class SessionUpdateOrInsertExecute {
      */
 
     public static long[] batchExecute(List<IBatchExecute> iBatchExecutes){
-        DataSource dataSource = DatabaseConnectionPool.getDataSource();
         Connection connection = null;
 
         try {
-            connection = dataSource.getConnection();
+            connection = DatabaseConnectionPool.getConnection();
             NamedCreateStatement2Processor namedCreateStatement2Processor = new NamedCreateStatement2Processor(connection, iBatchExecutes);
             Statement statement = namedCreateStatement2Processor.getStatement();
 
@@ -60,13 +59,7 @@ public class SessionUpdateOrInsertExecute {
             logger.error("Error executing query: ",  e);
             throw new RuntimeException(e);
         } finally {
-            if (connection != null) {
-                try {
-                    connection.close();
-                } catch (SQLException e) {
-                    logger.error("Error closing connection", e);
-                }
-            }
+            DatabaseConnectionPool.close(connection);
         }
     }
 
@@ -78,11 +71,10 @@ public class SessionUpdateOrInsertExecute {
      * @return
      */
     public static long[] batchExecute(StringBuilder templateSQL, List<DBParam[]> dbParams) {
-        DataSource dataSource = DatabaseConnectionPool.getDataSource();
         Connection connection = null;
 
         try {
-            connection = dataSource.getConnection();
+            connection = DatabaseConnectionPool.getConnection();
             NamedPreparedStatementProcessor namedPreparedStatementProcessor;
 
             boolean insert = templateSQL.indexOf("insert") != -1;
@@ -120,13 +112,8 @@ public class SessionUpdateOrInsertExecute {
         } catch (Exception e) {
             logger.error("Error executing query: {}", templateSQL, e);
         } finally {
-            if (connection != null) {
-                try {
-                    connection.close();
-                } catch (SQLException e) {
-                    logger.error("Error closing connection", e);
-                }
-            }
+            DatabaseConnectionPool.close(connection);
+
         }
         return new long[0];
 
@@ -134,11 +121,9 @@ public class SessionUpdateOrInsertExecute {
 
 
     public static Long execute(StringBuilder templateSQL, DBParam[] dbParams) {
-        DataSource dataSource = DatabaseConnectionPool.getDataSource();
         Connection connection = null;
         try {
-            connection = dataSource.getConnection();
-            NamedPreparedStatementProcessor namedPreparedStatementProcessor = new NamedPreparedStatementProcessor(connection, templateSQL,
+            connection = DatabaseConnectionPool.getConnection();            NamedPreparedStatementProcessor namedPreparedStatementProcessor = new NamedPreparedStatementProcessor(connection, templateSQL,
                     dbParams, Statement.RETURN_GENERATED_KEYS);
             PreparedStatement preparedStatement = namedPreparedStatementProcessor.getPreparedStatement();
 
@@ -160,13 +145,7 @@ public class SessionUpdateOrInsertExecute {
             logger.error("Error executing: {}", templateSQL, e);
             throw new RuntimeException(e);
         } finally {
-            if (connection != null) {
-                try {
-                    connection.close();
-                } catch (SQLException e) {
-                    logger.error("Error closing connection", e);
-                }
-            }
+            DatabaseConnectionPool.close(connection);
         }
     }
 
