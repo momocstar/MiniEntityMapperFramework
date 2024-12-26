@@ -11,7 +11,13 @@ import java.util.Collections;
 public class TestDelete {
 
     public static void main(String[] args) {
+        /**
+         * 默认写死了本地库,用于test
+         */
         DataSource dataSource = DatabaseConnectionPool.getDataSource();
+        /**
+         * 如果使用了spring ，可以手动注入
+         */
         DatabaseConnectionPool.initializingDataSource(dataSource);
 
         BaseEntityTemplateMapper<TestTable, Integer> baseEntityTemplateMapper = EntityDynamicClassLoader.generateMapperTemplateClass(TestTable.class, Integer.class);

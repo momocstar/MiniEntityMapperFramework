@@ -5,6 +5,9 @@ import model.TestTable;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
+/**
+ * 用于查看生成的反编译类
+ */
 public class BytecodeSaver {
 
     public static void saveBytecode(byte[] bytecode, String filePath) {

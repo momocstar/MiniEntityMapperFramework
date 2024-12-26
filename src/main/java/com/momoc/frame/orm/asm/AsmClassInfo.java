@@ -8,14 +8,24 @@ import lombok.Data;
 @Data
 public class AsmClassInfo {
 
+
+    /**
+     * 字节码
+     */
     byte[] byteClassCode;
 
-    //带有/
+    // 带有/
     String classFullName;
 
 
+    /**
+     * 所在包
+     */
     String packageName;
 
+    /**
+     * 简称
+     */
     String simpleClassName;
 
 }

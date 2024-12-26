@@ -17,6 +17,8 @@ public class EntityPage<T> {
 
 
     public EntityPage() {
+        this.page = 1;
+        this.pageSize = 10;
     }
 
     public EntityPage(Integer page, Integer pageSize) {

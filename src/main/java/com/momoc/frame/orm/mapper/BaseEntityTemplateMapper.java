@@ -30,21 +30,21 @@ public abstract class BaseEntityTemplateMapper<T, E> implements BaseEntityQueryM
     /**
      * 实体类Class
      */
-    public Class<T> entityClass;
+    protected Class<T> entityClass;
 
 
     /**
      * 主键类Class
      */
-    public Class<E> eClass;
+    protected Class<E> eClass;
 
-    public String IDName;
+    protected String IDName;
 
 
     /**
      * 表名
      */
-    public String tableName;
+    protected String tableName;
 
     /**
      * 字段与映射
@@ -53,7 +53,7 @@ public abstract class BaseEntityTemplateMapper<T, E> implements BaseEntityQueryM
 
 
     @Getter
-    public String allTableQueryField;
+    protected String allTableQueryField;
 
     @Override
     public T queryOneById(E id) {

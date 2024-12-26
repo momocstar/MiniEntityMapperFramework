@@ -10,6 +10,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+/**
+ * 用于生成实体的插入SQL
+ */
 public class EntityInsertSQLFieldGenerate {
 
     /**
@@ -17,14 +20,13 @@ public class EntityInsertSQLFieldGenerate {
      */
     private static final Map<Class<?>, String> CACHE_CLASS_FULL_INSERT_SQL = new ConcurrentHashMap<>();
     /**
-     * 完整实体的插入SQL
+     * 完整实体的插入SQL，带duplicate
      */
     private static final Map<Class<?>, String> CACHE_CLASS_FULL_DUPLICATE_INSERT_SQL = new ConcurrentHashMap<>();
 
 
     @Getter
     protected String SQL;
-
 
     //单实体插入时生成好的参数列表
     @Getter
@@ -40,7 +42,12 @@ public class EntityInsertSQLFieldGenerate {
     boolean duplicateOnUpdate = false;
 
 
-
+    /**
+     *
+     *  生成完整类的完整INSERT SQL
+     * @param tableName 表名
+     * @param entityClass 实体类
+     */
     public EntityInsertSQLFieldGenerate(String tableName, Class<?> entityClass) {
         this.entityClass = entityClass;
         //需要生成完整带空行SQL
@@ -49,7 +56,13 @@ public class EntityInsertSQLFieldGenerate {
 
     }
 
-
+    /**
+     *
+     *  生成完整类的完整INSERT SQL
+     * @param tableName 表名
+     * @param entityClass 实体类
+     * @param duplicateOnUpdate 存在则更新
+     */
     public EntityInsertSQLFieldGenerate(String tableName, Class<?> entityClass, boolean duplicateOnUpdate) {
         this.entityClass = entityClass;
         this.duplicateOnUpdate = duplicateOnUpdate;
@@ -59,6 +72,12 @@ public class EntityInsertSQLFieldGenerate {
     }
 
 
+    /**
+     * 生成完整类的完整INSERT SQL
+     * @param tableName 表名
+     * @param entityClass 类
+     * @param duplicateFields 存在更新的字段
+     */
     public EntityInsertSQLFieldGenerate(String tableName, Class<?> entityClass, String[] duplicateFields) {
         this.entityClass = entityClass;
         this.generateFullInsertSQL = true;
@@ -66,7 +85,11 @@ public class EntityInsertSQLFieldGenerate {
     }
 
 
-
+    /**
+     * 实例构造插入对象，当前字段有值则生成
+     * @param tableName
+     * @param entity
+     */
     public EntityInsertSQLFieldGenerate(String tableName, Object entity) {
         buildByInstanceEntity(tableName, entity, false);
     }
@@ -204,6 +227,11 @@ public class EntityInsertSQLFieldGenerate {
         this.SQL = sql.append(values).append(onUpdate).toString();
     }
 
+    /**
+     * 批量插入要手动构建的实体数据
+     * @param entity
+     * @return
+     */
     public DBParam[] buildEachParam(Object entity) {
 
         Field[] declaredFields = this.entityClass.getDeclaredFields();

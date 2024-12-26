@@ -19,9 +19,8 @@ public class EntityDynamicClassLoader extends ClassLoader {
         return defineClass(name, b, 0, b.length);
     }
 
-
     /**
-     * 使用AMS动态生成模板查询类
+     * 使用AMS动态生成模板类
      * @param entityClass 实体类与对应的数据库的表
      * @param idClass 主键类型
      * @return

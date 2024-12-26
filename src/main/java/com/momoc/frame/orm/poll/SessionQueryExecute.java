@@ -5,14 +5,13 @@ import com.momoc.frame.orm.mapper.ClassFieldTableMapperCache;
 import com.momoc.frame.orm.mapper.DBParam;
 import com.momoc.frame.orm.proccessor.*;
 import com.momoc.frame.orm.util.EntityMethodUtil;
+import com.mysql.cj.PreparedQuery;
+import com.mysql.cj.jdbc.ClientPreparedStatement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.sql.DataSource;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -75,6 +74,8 @@ public class SessionQueryExecute {
             PreparedStatement preparedStatement = namedPreparedStatementProcessor.getPreparedStatement();
             ResultSet resultSet = preparedStatement.executeQuery();
             ts = EntityMethodUtil.queryRsToBean(resultSet, entityClass, ClassFieldTableMapperCache.buildFiledSetterMethodMap(entityClass));
+            String finalSQL = ((PreparedQuery) preparedStatement.unwrap(ClientPreparedStatement.class).getQuery()).asSql();
+            logger.debug("final statement sql:{}", finalSQL);
             return ts;
         } catch (Exception e) {
             logger.error("Error executing query: {}", sql, e);
@@ -96,6 +97,8 @@ public class SessionQueryExecute {
             PreparedStatement preparedStatement = namedPreparedStatementProcessor.getPreparedStatement();
             ResultSet resultSet = preparedStatement.executeQuery();
             ts = EntityMethodUtil.queryRsToBean(resultSet, entityClass, ClassFieldTableMapperCache.buildFiledSetterMethodMap(entityClass));
+            String finalSQL = ((PreparedQuery) preparedStatement.unwrap(ClientPreparedStatement.class).getQuery()).asSql();
+            logger.debug("final statement sql:{}", finalSQL);
             return ts;
         } catch (Exception e) {
             logger.error("Error executing query: {}", sql, e);

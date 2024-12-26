@@ -1,4 +1,4 @@
-package com.momoc.frame.orm.annotation;
+package com.momoc.frame.orm.spring;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;

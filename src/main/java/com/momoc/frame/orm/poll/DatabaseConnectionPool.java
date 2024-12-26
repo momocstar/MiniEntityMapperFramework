@@ -30,14 +30,22 @@ public class DatabaseConnectionPool {
 
     public static Connection getConnection() throws SQLException {
         if (EntityTransactionManager.isOpenTransaction()) {
-            return EntityTransactionManager.getConnection();
+            Connection connection = EntityTransactionManager.getConnection();
+            connection.setAutoCommit(false);
+            return connection;
         }else{
+            //单个查询自动提交
+            Connection connection = dataSource.getConnection();
+            connection.setAutoCommit(true);
             //没有开启事务则自身获取数据库连接
-            return dataSource.getConnection();
+            return connection;
         }
     }
 
     public static void close(Connection connection) {
+
+
+
         //没有手动在方法外开起事务，直接被关闭
         if (connection != null && !EntityTransactionManager.isOpenTransaction()) {
             try {

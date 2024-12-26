@@ -8,7 +8,7 @@ import java.sql.SQLException;
 
 
 /**
- * 编程式事务管理器
+ * 编程式事务管理器，使用时需要关闭数据源的自动链接配置
  */
 public class EntityTransactionManager {
 

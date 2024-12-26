@@ -47,16 +47,14 @@ public class EntityMethodUtil {
 
         ArrayList<R> defs = new ArrayList<>();
 
-        Statement statement = resultSet.getStatement();
-        logger.debug("final statement sql:{}", statement.toString());
+
         while (resultSet.next()) {
             ResultSetMetaData metaData = resultSet.getMetaData();
             int columnCount = metaData.getColumnCount();
 
             R instance = createInstance(beanClass);
             for (int i = 1; i <= columnCount; i++) {
-                String columnName = metaData.getColumnName(i);
-
+                String columnName = metaData.getColumnLabel(i);
                 Object columnValue = resultSet.getObject(i);
                 try {
 
@@ -72,6 +70,9 @@ public class EntityMethodUtil {
                     }
 
                 } catch (Exception e) {
+                    /**
+                     * 转换失败可以尝试类型转换
+                     */
                     logger.error("转换失败: columnName:{} columnValue:{}", columnName, columnValue, e);
                 }
 

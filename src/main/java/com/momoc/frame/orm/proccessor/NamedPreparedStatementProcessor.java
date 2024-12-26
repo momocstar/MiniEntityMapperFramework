@@ -50,7 +50,9 @@ public class NamedPreparedStatementProcessor  {
 
 
 
-    Pattern REPLACE_PARAMS_PATTERN = Pattern.compile("@(\\w+)");
+    Pattern REPLACE_PARAMS_PATTERN = Pattern.compile("@\\w+(\\.\\w+)*");
+
+//    Pattern REPLACE_PARAMS_PATTERN = Pattern.compile("@(\\w+)");
 
 
     //前置处理
@@ -83,7 +85,7 @@ public class NamedPreparedStatementProcessor  {
          */
         Integer index = 1;
         while (matcher.find()) {
-            String key = matcher.group(1);
+            String key = matcher.group();
             indexesMap.put(key, index);
             index++;
         }
@@ -103,8 +105,8 @@ public class NamedPreparedStatementProcessor  {
                 N.deleteCharAt(N.length() - 1);
                 sql.replace(start, start + key.length(), N.toString());
             } else {
-                int finalIndex = indexesMap.get(dbParam.getName()) + offset;
-                indexesMap.put(dbParam.getName(), finalIndex);
+                int finalIndex = indexesMap.get(key) + offset;
+                indexesMap.put(key, finalIndex);
                 sql.replace(start, start + key.length(), "?");
             }
         }
@@ -113,7 +115,8 @@ public class NamedPreparedStatementProcessor  {
 
     public void setObject(DBParam... dbParams) throws SQLException {
         for (DBParam dbParam : dbParams) {
-            Integer index = indexesMap.get(dbParam.getName());
+            String key = "@" + dbParam.getName();
+            Integer index = indexesMap.get(key);
             if (index != null){
                 if (dbParam.isCollection()){
                     Collection<?> value = (Collection<?>) dbParam.getValue();
@@ -132,6 +135,7 @@ public class NamedPreparedStatementProcessor  {
             }
 
         }
+
     }
     public void setValueByType(int position, Object value) throws SQLException {
 

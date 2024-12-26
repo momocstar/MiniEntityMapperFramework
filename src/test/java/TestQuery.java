@@ -4,6 +4,7 @@ import com.momoc.frame.orm.asm.EntityDynamicClassLoader;
 import com.momoc.frame.orm.mapper.DBParam;
 import com.momoc.frame.orm.poll.DatabaseConnectionPool;
 import lombok.extern.slf4j.Slf4j;
+import model.OrderDTO;
 import model.TestTable;
 import model.TestTable2;
 
@@ -14,8 +15,16 @@ import java.util.*;
 @Slf4j
 public class TestQuery {
     public static void main(String[] args) {
+        /**
+         * 默认写死了本地库,用于test
+         */
         DataSource dataSource = DatabaseConnectionPool.getDataSource();
+        /**
+         * 如果使用了spring ，可以手动注入dataSource
+         */
         DatabaseConnectionPool.initializingDataSource(dataSource);
+
+
         HashMap<String, Object> paramsOne = new HashMap<>();
         paramsOne.put("id", 1);
 
@@ -23,9 +32,17 @@ public class TestQuery {
         entities.add(1);
         entities.add(2);
 
+        /**
+         * 生成查询模板实例
+         */
         BaseEntityTemplateMapper<TestTable, Integer> baseEntityTemplateMapper = EntityDynamicClassLoader.generateMapperTemplateClass(TestTable.class, Integer.class);
 
+        System.out.println("====================");
+        System.out.println("=========test_order");
+        OrderDTO testOrder = baseEntityTemplateMapper.queryBean("select u.id as userid, o.orderNo,o.id from t_user u join t_order o on u.id = o.userid ", OrderDTO.class, new DBParam("o.id", 1));
+        System.out.println(testOrder);
 //        Map<String, Object> two = baseEntityTemplateMapper.buildQueryMap();
+        System.out.println("====================");
 
 
         TestTable testTable = baseEntityTemplateMapper.queryOneById(1);

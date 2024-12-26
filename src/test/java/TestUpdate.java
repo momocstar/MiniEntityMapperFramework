@@ -31,6 +31,7 @@ public class TestUpdate {
          baseEntityTemplateMapper.update(testTables);
 
 
+//        baseEntityTemplateMapper.queryBean()
 //        TestTable testTable = new TestTable();
 //        testTable.setName("李四");
 //        testTable.setAge("21");
