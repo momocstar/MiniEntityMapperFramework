@@ -41,7 +41,7 @@ public class CreateEntityDynamicBeanProcessor implements BeanPostProcessor {
                 try {
                     Method method = beanClass.getMethod("buildMapperObj", Class.class, Class.class);
                     method.setAccessible(true);
-                    method.invoke(bean, entityClass,iDclass);
+                    method.invoke(bean, entityClass, iDclass);
                 } catch (Exception e) {
                     throw new RuntimeException(e);
                 }
