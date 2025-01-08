@@ -1,8 +1,7 @@
 ### 项目简介
 
-无事，悠闲，只想敲下代码
 
-本项目不依赖spring，轻量JAVA ORM工具。欢迎大家一起完善
+本项目可不依赖spring，但提供了spring boot starter自动化配置项目，轻量JAVA ORM工具。欢迎大家一起完善
 
 
 
