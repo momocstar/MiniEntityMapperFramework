@@ -27,19 +27,29 @@
         <url/>
     </scm>
     <properties>
-        <java.version>17</java.version>
+        <springboot.version>3.4.1</springboot.version>
     </properties>
     <dependencies>
-
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-autoconfigure</artifactId>
+            <version>${springboot.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>ch.qos.logback</groupId>
+                    <artifactId>logback-core</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>ch.qos.logback</groupId>
+                    <artifactId>logback-classic</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>
             <groupId>com.momoc.frame</groupId>
-            <artifactId>MiniEntityMapperFramework</artifactId>
-            <version>1.0-SNAPSHOT</version>
+            <artifactId>mini-entity-mapper-framework</artifactId>
+            <version>1.0.0-SNAPSHOT</version>
         </dependency>
     </dependencies>
 

@@ -2,6 +2,7 @@ package com.momoc.frame.springboot.starter.orm;
 
 import com.momoc.frame.orm.asm.EntityDynamicClassCreator;
 import com.momoc.frame.orm.asm.EntityDynamicClassLoader;
+import com.momoc.frame.orm.mapper.BaseEntityTemplateMapper;
 import com.momoc.frame.springboot.starter.orm.annotation.EntityMapperAutowired;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeansException;
@@ -13,18 +14,22 @@ import org.springframework.stereotype.Component;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.util.Random;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author momoc
  * @version 1.0
- * @className MRpcReferenceInject
- * @description
- * @date 2022/7/26 10:51 上午
+ * className MRpcReferenceInject
+ * description
+ * date 2025/01/08 10:51 上午
  */
 @Slf4j
 @Component
 public class BaseMapperReferenceInject implements BeanPostProcessor {
+
+
+    private static final Map<Class<?>, Map<Class<?>, BaseEntityTemplateMapper<?,?>>>  CACHE_CLASS = new HashMap<>();
 
 
     @Autowired
@@ -60,9 +65,22 @@ public class BaseMapperReferenceInject implements BeanPostProcessor {
                 throw new RuntimeException("BaseEntityTemplateMapper did not provide corresponding generic and primary key types");
             }
 
+
+            Map<Class<?>, BaseEntityTemplateMapper<?, ?>> classBaseEntityTemplateMapperMap = CACHE_CLASS.computeIfAbsent(entityClass, k -> new HashMap<>());
+
+
             try {
+                BaseEntityTemplateMapper<?, ?> baseEntityTemplateMapper;
+                if (classBaseEntityTemplateMapperMap.containsKey(iDclass)) {
+                    baseEntityTemplateMapper = classBaseEntityTemplateMapperMap.get(iDclass);
+                }else{
+                    baseEntityTemplateMapper = EntityDynamicClassLoader.generateMapperTemplateClass(entityClass, iDclass);
+                    classBaseEntityTemplateMapperMap.put(iDclass, baseEntityTemplateMapper);
+                    CACHE_CLASS.put(entityClass, classBaseEntityTemplateMapperMap);
+                }
                 declaredField.setAccessible(true);
-                declaredField.set(bean, EntityDynamicClassLoader.generateMapperTemplateClass(entityClass, iDclass));
+                declaredField.set(bean, baseEntityTemplateMapper);
+
             } catch (IllegalAccessException e) {
                 throw new RuntimeException(e);
             }

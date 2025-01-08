@@ -1,0 +1,2 @@
+# support spring boot 2.7 version or early version
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=com.momoc.frame.springboot.starter.orm.MiniEntityMapperAutoConfigure
